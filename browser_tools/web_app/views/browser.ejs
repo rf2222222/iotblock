@@ -1,0 +1,1158 @@
+<% if (!bodyOnly) { %>
+    <%- include('partials/header') %>
+<% } else { %>
+<script>
+var isSmartKey=false;
+var isBrowse=false;
+var isWeb=false;
+var isPool=false;
+</script>
+<% } %>
+
+<script>
+
+var map_json={};
+
+var user_item = {
+    "item-metadata":[
+        {
+            "rel":"urn:X-hypercat:rels:hasDescription:en",
+            "val":"A catalogue"
+        },
+        {
+            "rel":"urn:X-hypercat:rels:isContentType",
+            "val":"application/vnd.tsbiot.catalogue+json"
+        },
+        {
+            "rel":"urn:X-hypercat:rels:supportsSearch",
+            "val":"urn:X-hypercat:search:simple"
+        }
+    ],
+    "items": []
+};
+
+var history = [];
+var catalogue_meta_data=[];
+var catalogue_item_meta_data=[];
+var api_key='';
+var api_auth='';
+
+    
+function fill_api_info(auth, auth_info) {
+
+    if (auth_info.length < 1)    {
+        auth="Please Generate API Key <a href='key.html'>Here</a>";
+        location.href='key.html';
+    }
+        
+    $('.auth').html(auth);
+    api_key=auth_info;
+    api_auth=auth;
+        
+}
+
+
+function add_item(id) {
+    var url = $('#browse_url').val() + '/<catalogue_name>';
+                
+    var html='<div class="input-group">';
+    html+='<span><h3>URL:</h3></span><input class="form-control" type=text id="new_url" value="' + url + '">';
+    //html+='<input class="form-control" type=text id="' + id + '_val" value="' + val + '">';
+    html+='<div class="input-group-append"><button class="btn btn-primary" type="button" ';
+    html+=' onClick="JavaScript:save_item(\'' + id + '\')">Save</button></div>';
+    html+='</div>';
+    $('#' + id).html(html);
+}
+
+function add_auth(xhr) {
+        var eth1=1000000000000000000;
+        var eth_contrib=parseFloat($('#eth_contrib').val()) * eth1;
+        var data="Token api_key=\"" + api_key + "\" auth=\"" + api_auth + "\" eth_contrib=\"" + eth_contrib + "\"";
+        data=btoa(data);
+        data=btoa(data + ':' + '');
+        xhr.setRequestHeader("Accept","application/vvv.website+json;version=1");
+        xhr.setRequestHeader("Authorization", data); 
+
+}
+
+function save_item(id) {
+        var parent_address = $('#browse_url').val();
+        var url = $('#new_url').val();
+        var html='<img src="images/wait.gif"  width=100>';
+        $('#' + id).html(html);
+   
+        
+        $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: '/cat/post?parent_href=' + encodeURIComponent(parent_address) + '&href=' + encodeURIComponent(url),
+            data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                browse($('#browse_url').val(), function() {
+                    log('browse complete');
+                });
+
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+function add_meta(id, node_href, item_href) {
+    var rel='urn:X-hypercat:rels:hasDescription:en';
+    var val='';
+    var html='<div class="input-group">';
+    html+='<input class="form-control" type=text id="' + id + '_rel" value="' + rel + '"><span style="vertical-align:middle;"><h1> = </h1></span>';
+    html+='<input class="form-control" type=text id="' + id + '_val" value="' + val + '">';
+    html+='<div class="input-group-append"><button class="btn btn-primary" type="button" ';
+    html+=' onClick="JavaScript:save_meta(\'' + id + '\',\'' + node_href + '\',\'' + item_href + '\')">Save</button></div>';
+    html+='</div>';
+    $('#' + id).html(html);
+
+}
+
+function edit_meta(id, idx, data, node_href, item_href) {
+
+    var html='<div class="input-group">';
+    html+='<input class="form-control" type=text id="' + id + '_rel" value="' + data[idx]['rel'] + '"><span style="vertical-align:middle;"><h1> = </h1></span>';
+    html+='<input class="form-control" type=text id="' + id + '_val" value="' + data[idx]['val'] + '">';
+    html+='<div class="input-group-append"><button class="btn btn-primary" type="button" ';
+    html+=' onClick="JavaScript:save_meta(\'' + id + '\',\'' + node_href + '\',\'' + item_href + '\')">Save</button></div>';
+    html+='</div>';
+    $('#' + id).html(html)
+
+}
+
+function save_meta(id, node_href, item_href) {
+
+        var key='';
+        var rel = $('#' + id + '_rel').val();
+        var val = $('#' + id + '_val').val();
+        
+        var post_url='/cat/postNodeMetaData?href=' + encodeURIComponent(node_href);
+        
+        if (item_href) {
+            post_url='/cat/postNodeItemMetaData?parent_href=' + encodeURIComponent(node_href) + '&href=' + encodeURIComponent(item_href);
+        }
+        
+        //console.log(post_url, rel, val);
+        post_url+='&rel=' + encodeURIComponent(rel);
+        post_url+='&val=' + encodeURIComponent(val);
+        post_url+='&key=' + encodeURIComponent(key);
+        //alert(post_url);
+        $.ajax({
+            beforeSend: function(xhr){
+                    add_auth(xhr);
+                    //setHeaders(xhr);
+            },
+            type: 'GET',
+            url: post_url,
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                browse($('#browse_url').val(), function() {
+                    log('browse complete');
+                });
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+    //alert(id);  
+}
+
+
+
+function save_location(node_href, lat, lng) {
+       $('#location_save_loading').show();
+       $('#location_map').hide();
+        var key='';
+                
+        var post_url='/cat/postNodeMetaData?href=' + encodeURIComponent(node_href);
+        
+        var lat_rel="http://www.w3.org/2003/01/geo/wgs84_pos#lat"
+        var lng_rel="http://www.w3.org/2003/01/geo/wgs84_pos#long"
+        
+        var lat_url= post_url + '&rel=' + encodeURIComponent(lat_rel);
+        lat_url+='&val=' + encodeURIComponent(lat);
+        lat_url+='&key=' + encodeURIComponent(key);
+        
+        var lng_url= post_url + '&rel=' + encodeURIComponent(lng_rel);
+        lng_url+='&val=' + encodeURIComponent(lng);
+        lng_url+='&key=' + encodeURIComponent(key);
+        //alert(post_url);
+        $.ajax({
+            beforeSend: function(xhr){
+                                        add_auth(xhr);
+                                        //setHeaders(xhr);
+                                },   
+            type: 'GET',
+            url: lat_url,
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                $.ajax({
+                    beforeSend: function(xhr){
+                                        add_auth(xhr);
+                                        //setHeaders(xhr);
+                                },                    
+                    type: 'GET',
+                    url: lng_url,
+                    //data: JSON.stringify(user_item),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    success: function(body, textStatus, xhr) {
+                        browse($('#browse_url').val(), function() {
+                            log('browse complete');
+                        });
+                    },
+                    error: function(xhr, textStatus, err) {
+                        log(xhr.status + ' ' + xhr.statusText);
+                    }
+                });
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+
+    //alert(id);  
+}
+
+function get_smart_key_info(href) {
+
+    
+    $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: '/cat/getNodeSmartKey?href=' + encodeURIComponent(href),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                fill_page2(href, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+
+function get_transfer_node_eth(href, beneficiary, amount) {
+   var eth1=1000000000000000000;
+   var amt=parseFloat(amount) * eth1;
+   $('#eth_transfer').hide();
+   $('#eth_transfer_loading').show();
+   $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: '/cat/transferNodeEth?href=' + encodeURIComponent(href) + '&beneficiary=' + encodeURIComponent(beneficiary) + '&amount=' + encodeURIComponent(amt),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+               $('#eth_transfer').show();
+               $('#eth_transfer_loading').hide();
+                fill_page2(href, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+               $('#eth_transfer').show();
+               $('#eth_transfer_loading').hide();
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+
+
+function setHealth(href, health) {
+   var health=parseInt(health)
+   $('#health').hide();
+   $('#health_loading').show();
+   $.ajax({
+            beforeSend: function(xhr){
+                    add_auth(xhr);
+                    //setHeaders(xhr);
+            },
+            type: 'GET',
+            url: '/cat/setHealth?href=' + encodeURIComponent(href) + '&health=' + encodeURIComponent(health),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+               $('#health').show();
+               $('#health_loading').hide();
+                fill_page2(href, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+               $('#health').show();
+               $('#health_loading').hide();
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+function deleteCat(cat_url) {
+    del(cat_url, $('#key').val(), function(err) {
+        if (!err) {
+            // go back
+            if (history.length > 1) {
+                history.pop();  // throw away top
+                url = history.pop();
+                browse(url, function() {
+                    log('browse complete');
+                });
+            }
+        }
+    });
+}
+
+function deleteItem(cat_url, item_url) {
+    var url = cat_url + "?href=" + encodeURIComponent(item_url);
+    del(url, $('#key').val(), function(err) {
+        if (!err) {
+            browse($('#url').val(), function() {
+                log('browse complete');
+            });
+        }
+    });
+}
+
+
+function getMap() {
+     $('#showMap').html('');
+     $('#ShowMapTemplate').tmpl(map_json).appendTo('#showMap');
+    var lng=-0.116993;
+    var lat=51.508775;
+
+    if ("Latitude" in map_json) {
+        lat=map_json["Latitude"];
+    }
+
+    if ("Longitude" in map_json) {
+        lng=map_json["Longitude"];
+    }
+    //Set up some of our variables.
+    var map; //Will contain map object.
+    var marker = false; ////Has the user plotted their location marker? 
+    
+    //Function called to initialize / create the map.
+    //This is called when the page has loaded.
+    function initMap() {
+     
+        //The center location of our map.
+        var centerOfMap = new google.maps.LatLng(lat, lng);
+     
+        //Map options.
+        var options = {
+          center: centerOfMap, //Set center.
+          zoom: 3, //The zoom value.
+          mapTypeId: google.maps.MapTypeId.HYBRID
+        };
+     
+        //Create the map object.
+        map = new google.maps.Map(document.getElementById('map'), options);
+        
+        var pointMarker=new google.maps.Marker({
+            position: new google.maps.LatLng(lat, lng),
+            map: map, 
+            
+        });
+     
+        //Listen for any clicks on the map.
+        google.maps.event.addListener(map, 'click', function(event) {     
+            pointMarker.setMap(null);
+            //Get the location that the user clicked.
+            var clickedLocation = event.latLng;
+            //If the marker hasn't been added.
+            if(marker === false){
+                //Create the marker.
+                marker = new google.maps.Marker({
+                    position: clickedLocation,
+                    map: map,
+                    draggable: true //make it draggable
+                });
+                //Listen for drag events!
+                google.maps.event.addListener(marker, 'dragend', function(event){
+                    markerLocation();
+                });
+            } else{
+                //Marker has already been added, so just change its location.
+                marker.setPosition(clickedLocation);
+            }
+            //Get the marker's location.
+            markerLocation();
+        });
+        
+         // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(input);
+
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+        
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          // Clear out the old markers.
+          markers.forEach(function(marker) {
+            marker.setMap(null);
+          });
+          markers = [];
+
+          // For each place, get the icon, name and location.
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            if (!place.geometry) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            var icon = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            markers.push(new google.maps.Marker({
+              map: map,
+              icon: icon,
+              title: place.name,
+              position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+              // Only geocodes have viewport.
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+          map.setZoom(12);
+        });
+    }
+            
+    //This function will get the marker's current location and then add the lat/long
+    //values to our textfields so that we can save the location.
+    function markerLocation(){
+        //Get location.
+        var currentLocation = marker.getPosition();
+        //Add lat and lng values to a field that we can save.
+        document.getElementById('lat').value = currentLocation.lat(); //latitude
+        document.getElementById('lng').value = currentLocation.lng(); //longitude
+    }
+            
+            
+    //Load the map when the page has finished loading.
+    google.maps.event.addDomListener(window, 'load', initMap);
+    initMap();
+    $("#showMap").show();
+}
+
+function browseCatalogue() {
+    browse($('#browse_url').val(), function() {
+    });
+}
+
+function parseCatalogue(url, doc) {
+    var catMetadataListHTML = '<ul>';
+    var count=0;
+    //try {
+    // store metadata for catalogue
+    console.log('Received Document')
+    console.log(doc);
+    var eth1_amount=1000000000000000000;
+    
+    for (var i=0;i<doc['catalogue-metadata'].length;i++) {
+        
+        var bal=parseFloat(doc['catalogue-metadata'][i].bal)/eth1_amount;
+        //alert(doc['catalogue-metadata'][i]);
+        catMetadataListHTML += '<li id=catalogue_meta_' + count + '>';
+        catMetadataListHTML += '[ <a href="JavaScript:edit_meta(\'catalogue_meta_' + count + '\', ' + count + ', catalogue_meta_data, \'' + url + '\',\'\')"> Edit </a> ] ';
+        catMetadataListHTML += doc['catalogue-metadata'][i].rel + ' = "' + doc['catalogue-metadata'][i].val + '"'
+        catMetadataListHTML += '<br><b>Donation Received: ' + bal + ' ETH ' + '</b> ' + '<br><br></li>';
+        
+        catalogue_meta_data.push({ 'rel':doc['catalogue-metadata'][i].rel, 'val':doc['catalogue-metadata'][i].val});
+        if (doc['catalogue-metadata'][i].rel == "http://www.w3.org/2003/01/geo/wgs84_pos#lat") {
+            map_json["Latitude"]=doc['catalogue-metadata'][i].val;
+        }
+        if (doc['catalogue-metadata'][i].rel == "http://www.w3.org/2003/01/geo/wgs84_pos#long") {
+            map_json["Longitude"]=doc['catalogue-metadata'][i].val;
+        }
+        count+=1;
+
+    }
+
+    var addItemMetaData = ' [<a href="JavaScript:add_meta(\'catalogue_create_meta_data\',\'' + url + '\',\'\')">Add Meta Data</a>] <br><br>';
+
+    var maplink='[ <a href="JavaScript:getMap();">Edit Location</a> ]<br><br>';
+    
+    catMetadataListHTML += '<li id=catalogue_create_meta_data>' + addItemMetaData + '</li>';
+
+    catMetadataListHTML += '<li id=catalogue_get_location>' + maplink + '</li>';
+        
+    //} catch(e) {
+    //    log(e);
+    //}
+    catMetadataListHTML += '</ul>';
+
+    var urls=[url];
+    var itemListHTML = '<ul>';
+
+    count=0;
+    //try {
+        for (var i=0;i<doc.items.length;i++) {
+            var item = doc.items[i];
+            item.href = item.href.toString(); //URI(item.href).absoluteTo(url).toString();    // fixup relative URL
+            urls.push(item.href);
+            var isCat = false;
+            var isGenericResource = false;
+            var itemMetadataListHTML = '<ul>';
+            var supportsQueryOpenIoT = false;
+            for (var j=0;j<item['item-metadata'].length;j++) {
+                var mdata = item['item-metadata'][j];
+                var bal=parseFloat(mdata.bal)/eth1_amount;
+                if (mdata.rel == 'urn:X-tsbiot:rels:supports:query' && mdata.val == 'urn:X-tsbiot:query:openiot:v1')
+                    supportsQueryOpenIoT = true;
+                itemMetadataListHTML += '<li id=item_meta_' + count + '>' 
+                itemMetadataListHTML += '[ <a href="JavaScript:edit_meta(\'item_meta_' + count + '\', ' + count + ', catalogue_item_meta_data, \'' + url + '\',\'' + item.href + '\')"> Edit </a> ] ' + mdata.rel + ' = "' + mdata.val + '"'
+                itemMetadataListHTML += '<br><b>Donation Received: ' + bal + ' ETH ' + '</b> ' + '<br><br></li>';
+                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && mdata.val == "application/vnd.tsbiot.catalogue+json")
+                    isCat = true;
+                if (mdata.rel == "urn:X-tsbiot:rels:isContentType" && (mdata.val == "application/senml+json" || mdata.val == "CompositeContentType"))
+                    isGenericResource = true;
+                catalogue_item_meta_data.push({ 'rel':mdata.rel, 'val':mdata.val, 'bal':bal});
+            
+                count+=1;
+            }
+             var addItemMetaData = ' [<a href="JavaScript:add_meta(\'catalogue_create_meta_data_' + i + '\',\'' + url + '\',\'' + item.href  + '\')">Add Meta Data</a>] <br><br>';
+
+            itemMetadataListHTML += '<li id="catalogue_create_meta_data_' + i + '">' + addItemMetaData + '</li>';
+            itemMetadataListHTML += '</ul>';
+
+            var link;
+            isCat=true;
+
+            if (isCat)
+                link = ' <a href="javascript:browse(\''+item.href+'\', function(){})">'+item.href+'</a>';
+            else
+            if (isGenericResource)
+                link = '<a href="resourceviewer.html?key='+encodeURIComponent($('#key').val())+'&url='+encodeURIComponent(item.href)+'" target="_blank">'+item.href+'</a>';
+            else
+                link = '<a href="'+item.href+'">'+item.href+'</a>';
+
+            var editlink = '<a href="itemcreator.html?key='+encodeURIComponent($('#key').val())+'&cat_url='+encodeURIComponent(url)+'&href='+encodeURIComponent(item.href)+'" target="_blank"><strong>[edit item]</strong></a>';
+            var deletelink = '<a href="javascript:deleteItem(\''+url+'\',\''+item.href+'\');"><strong>[delete item]</strong></a>';
+
+            
+            itemListHTML += '<li>' + link + '<br><br></li>';
+            itemListHTML += itemMetadataListHTML;
+        }
+        var addItemLink = '[<a href="JavaScript:add_item(\'add_catalogue_item\')"> Add Item </a>] ';
+        itemListHTML += '<li id="add_catalogue_item">' + addItemLink + '</li>';
+        
+        itemListHTML += '</ul>';
+
+        var deletecatlink = '<a href="javascript:deleteCat(\''+url+'\');"><strong>[delete catalogue]</strong></a>';
+        
+        var listHTML = '<ul>';
+        listHTML += '<li> Catalogue Metadata<br><br> </li>';
+        listHTML += catMetadataListHTML;
+        listHTML += '<li id="showMap" style="display:none"></li>'
+        listHTML += '<li> Items <br><br> </li>'
+        listHTML += itemListHTML;
+        listHTML += '</ul>';
+
+        populateUrls(urls);
+        $('#browser').html(listHTML);
+    //} catch(e) {
+    //    log(e);
+    //}
+}
+
+function browse(url, cb) {
+    var history=[];
+        
+    //alert(url);
+    fetch_location='/cat/getBalance?href=' + url; 
+
+    $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: fetch_location,
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(doc, textStatus, xhr) {
+               
+                    history.push(url);
+                    $('#browse_url').val(url);
+                    parseCatalogue(url, doc);    // parse doc
+                    cb(null); // done
+                    get_smart_key_info(url)
+                
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+
+}
+
+function refreshRaw() {
+    $('#raw').val(JSON.stringify(user_item, undefined, 4));
+}
+
+function populateMetaData() {
+    var metadataHTML = '<ul>';
+    for (var i=0;i<user_item['item-metadata'].length;i++) {
+        var metadataItem = user_item['item-metadata'][i];
+        var relHTML = '<input type="text" id="rel_'+i+'" size=40 value="'+metadataItem.rel+'"/>';
+        var valHTML = '<input type="text" id="val_'+i+'" size=40 value="'+metadataItem.val+'"/>';
+        var metadataItemHTML = relHTML + ' = ' + valHTML;
+        var removeButtonHTML = '<input type="button" id="remove_'+i+'" value="X" />'
+        metadataItemHTML += removeButtonHTML;
+        var divHTML = '<div id="'+'div_'+i+'">' + metadataItemHTML + '</div>';
+        metadataHTML += '<li>' + divHTML + '</li>';
+    }
+    metadataHTML += '</ul>';
+
+    $('#metadata').html(metadataHTML);
+
+    for (var i=0;i<user_item['item-metadata'].length;i++) {
+        $('#remove_'+i).click(function() {
+            var index = ($(this).attr('id').split('remove_'))[1];
+            user_item['item-metadata'].splice(index, 1);
+            refreshRaw();
+            populateMetaData();
+        });
+        $('#rel_'+i).on('keyup', function (e) {
+            var index = ($(this).attr('id').split('rel_'))[1];
+            user_item['item-metadata'][index].rel = $(this).val();
+            refreshRaw();
+        });
+        $('#val_'+i).on('keyup', function (e) {
+            var index = ($(this).attr('id').split('val_'))[1];
+            user_item['item-metadata'][index].val = $(this).val();
+            refreshRaw();
+        });
+    }
+}
+
+
+$(document).ready(function() { 
+    var param_url = getQueryVariable('url');
+    var param_key = getQueryVariable('key');
+    if (param_key === undefined)
+        param_key = "";
+
+    $('#key').val(param_key);
+    if (param_url !== undefined) {
+        $('#browse_url').val(param_url);
+    }
+
+    populateUrls([]);
+
+    populateMetaData();
+    $('#add_metadata').click(function() {
+        user_item['item-metadata'].push({rel:"", val:""});
+        populateMetaData();
+    });
+
+    $('#urls').on('change', function (e) {
+        var optionSelected = $("option:selected", this);
+        var valueSelected = this.value;
+        $('#browse_url').val(this.value);
+        
+        browse($('#browse_url').val(), function() {
+            log('browse complete');
+        });
+        
+    
+    });
+
+    $('#urls').trigger('change');
+});
+
+
+function fill_page2(href, address, balance, eth_recv, vault, state, health, isOwner) {
+   console.log(address, balance, eth_recv, vault, state, health);
+   $('#loading').show();
+   $('#page2').hide();
+
+    //alert(eth_sent);
+    if (address == '0x0000000000000000000000000000000000000000') {
+        //$('#page1').show();
+        $('#loading').hide();
+        $('#page2').hide();
+    } else {
+       var eth1_amount=1000000000000000000       
+       balance/=eth1_amount;
+       eth_recv/=eth1_amount;
+       var states=[ 'Issued', 'Active', 'Returned' ]
+       var healthStates = ['Provisioning', 'Certified', 'Modified', 'Compromised', 'Malfunctioning', 'Harmful', 'Counterfeit' ]
+       
+       //$('#page1').hide();
+       $('#loading').hide();
+       $('#page2').show();
+       
+       if (isOwner) {
+           $('#eth_transfer').show();
+           
+       } else {
+           $('#eth_transfer').hide();
+       
+       }
+       
+       $('.eth_balance').html(balance);
+       $('.eth_received').html(eth_recv);
+       $('.vault').html( vault );
+       $('.state').html( states[state] );
+       $('.health').html( healthStates[health] );
+       $('.progress-bar').val( balance / eth_recv * 100 );
+       $('#poolkey').html('<pre>' + address + '</pre>');
+       
+       $('#contrib-stat').html('');
+       Morris.Donut({
+          element: 'contrib-stat',
+          data: [
+            {label: "Received ETH", value:  eth_recv},
+            {label: "Available ETH", value:  balance},
+          ]
+        });
+        
+         
+        $('#send_ether').on('click', function(e) {
+               var eth1=1000000000000000000;
+               var amt=parseInt($('#send_amt').val()) * eth1;
+               send_ether(address, amt);
+       });       
+   }
+   get_smartkey_transactions(href, 0, 10);
+
+   
+}  
+
+function get_smartkey_transactions(href, offset, limit) {
+   $('.loadmore').hide();
+   $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: '/cat/getNodeSmartKeyTx?href=' + encodeURIComponent(href) + '&offset=' + encodeURIComponent(offset) + '&limit=' + encodeURIComponent(limit),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                if (parseInt(offset) == 0) {
+                    $('#transactions').html('');
+                }
+                var transactions=body["transactions"];
+                for (var i=0; i < transactions.length; i++) {
+                    var account=transactions[i]["account"];
+                    var date=transactions[i]["date"];
+                    var amount=transactions[i]["amount"];
+                    var tx_type=transactions[i]["tx_type"];
+                    fill_page2_transactions(account, date, amount, tx_type)
+                }
+                var count=parseInt(body["count"]);
+                fill_page2_transactions_load_more(href, offset, limit, count);
+                
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+function fill_page2_transactions(sender, date, amount, tx_type) {
+        console.log(sender, date, amount);
+        var dateTime = new Date(parseInt(date) * 1000);
+        date=dateTime.toISOString(); 
+        var eth1=1000000000000000000;
+        var tx='Incoming';
+        if (tx_type > 0) {
+            tx='Outgoing';
+        }
+        var html ="<div class='row label8'><div class=col-md-3>";
+        html +='<b>Date:</b><br> ' + date + "</div><div class=col-md-5>";
+        html +='<b>Address:</b><br> ' + sender + "</div><div class=col-md-2>";
+        html +='<b>Type:</b><br> ' + tx + "</div><div class=col-md-2>";
+        html +='<b>Amount:</b><br> ' + amount/eth1 + " ETH </div>";
+        html +="<hr></div><br>";
+        
+        $('#transactions').append(html);
+}
+    
+function fill_page2_transactions_load_more(href, offset, limit, count) {
+        offset=parseInt(offset)
+        offset+=limit;
+        if (offset < count) {
+            var html ="<div class='row label8 loadmore'><div class=col-md-12><center>";
+            html +='<a href="#transactions" class="button3 form-control btn btn-primary" onClick="JavaScript:get_smartkey_transactions(\'' + href + '\', ' + offset + ', ' + limit + ');"><span class="buttonText">Load More</span></a>'
+            html +="</center><br><br></div>";
+            
+            $('#transactions').append(html);
+        }
+
+}    
+
+</script>
+<form id="page1">
+    
+
+<div class="row">
+<div class="col-md-12">
+        <br>
+        <center>
+        <label class="title2" style="padding-top:5px;">Catalogue Browser & Editor</label>
+        <hr>
+        </center>
+        <form class="form-group">
+            <div class="row">
+                <div class="col-md-6">
+                    
+                    <label class="title3">Select Catalogue:
+                    </label>
+                    <select id="urls" class="form-control m-input m-input--air" style="height:45px;"></select>
+                    
+                </div>
+                <div class="col-md-6">
+                    
+                    <label class="title3">Catalogue URL:
+                    </label>
+                    <div class="input-group">
+                    <input class="form-control m-input m-input--air" style="height:45px;" type="text" id="browse_url" size=80 value="<%= config.site_url %>/cat" />
+                        <div class="input-group-append">
+                            <button class="button3 btn btn-primary" type="button" onClick="JavaScript:browseCatalogue();"><span class="buttonText">Browse</span></button>
+                        </div>
+                    </div>
+                
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6" align=left>
+                    <br>
+                    <label class="title3">User SmartKey (Rinkeby Ethereum Network):
+                    </label>
+                    <span class="auth"></span>
+                    
+                </div>
+                <div class="col-md-6">
+                    <br>
+                    
+                    <label class="title3">ETH Donation Per Transaction:
+                    </label>
+                    <div class="input-group">
+                    <select id="eth_contrib" class="form-control m-input m-input--air" style="height:45px;">
+                        <option value='0.0001'>0.0001 ETH</option>
+                        <option value='0.001'>0.001 ETH</option>
+                        <option value='0.01'>0.01 ETH</option>
+                        <option value='0.1'>0.1 ETH</option>
+                        <option value='1'>1 ETH</option>
+                        
+                    </select>
+                        <div class="input-group-append">
+                            <button class="button3 btn btn-primary" type="button" ><span class="buttonText">Set Payment Terms</span></button>
+                        </div>
+                    </div>
+                    (Data update will reflect in catalogue after 1-2 minutes)
+                
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <br>
+                    <!--
+                    <h3>Key
+                    </h3>
+                    <input class="form-control m-input m-input--air" type="password" id="key" size=40 value="" />
+                    //-->
+                    <br>
+                    <div id="browser"></div>
+                    <!--
+                    <h1>Metadata Editor</h1>
+                    
+                        <hr>
+                        <p>
+                            <div id="metadata"></div>
+                            <input type="button" id="add_metadata"  class="btn m-btn--pill m-btn--air         btn-outline-info"  i value="Add more metadata" /><br>
+                        </p>
+                        <hr>
+                    //-->
+
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <!--
+    <div class="col-md-6">
+        <h1>Start a Catalogue</h1>
+        <form id="start_catalogue">
+        <p>
+            <h3>URL to Add to Catalogue:</h3>
+            <input  class="form-control m-input m-input--air"  type="text" id="new_url" size=80 value="" />
+            <br>
+            <h3>Key&nbsp;</h3>
+            <span class="key"></span>
+            <input  class="key_val form-control m-input m-input--air"  id="key"  size=40 value="" />
+            <br>
+            <input type="button" class="btn m-btn--pill m-btn--air         btn-outline-info"  id="post_item" value="Add a Catalogue" />
+        </p>    
+        </form>
+        <form id="loading" style="display:none;">
+        <img src="images/wait.gif"  width=100>
+        </form>
+
+            
+    </div>
+    //-->
+</div>
+</form>
+<form id="loading" >
+<img src="images/wait.gif" width=100>
+</form>
+<form id="page2" style="display:none;">
+<div class="row">
+    <div class="col-md-12">    
+        <center><label class="title2">Catalogue Smart Key Contract Address</label></center><br>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">    
+
+        <center><h3><span id='poolkey'></span></h3></center>
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">    
+        <hr>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">    
+        <div class="m-portlet m-portlet--tab">
+               <div class="m-portlet__head">
+        
+                    <br><br>                    
+                    
+                    <div class="row">
+                        <div class="col-md-6">    
+                            
+                            <h3>ETH BALANCE</h3>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h3><span class="eth_balance"></span></h3>
+                                    <font size=2>ETH</font><br>
+                                </div>
+                            </div>                            
+                            
+                            
+                        </div>
+                        <div class="col-md-6">    
+                            
+                            <h3>ETH RECEIVED</h3>
+                            <h3><span class="eth_received"></span></h3> <font size=2>ETH</font>
+
+                            
+                        </div>
+                    </div>
+                   
+                    <div class="row">
+                        <div class="col-md-12">
+                                <br><br>
+                                <h4>
+                                     
+                                     <div class="progress m-progress--sm">
+                						<div class="progress-bar m--bg-accent" role="progressbar" style="height:35px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                						<b><span class="eth_sent"></b>
+                						</div>
+                					</div>
+                                    
+                                </h4>
+                                <br><br>
+                        </div>
+                    </div>
+                    
+                     <div class="row">
+                        <div class="col-md-6">    
+                            <h3 class='status'>Health Status</h3>
+                            <label class="title3"><span class='health'></span></label>
+                        </div>
+                        <div class="col-md-6">    
+                            <h3>Key State</h3>
+                            <label class="title3">    
+                            <span class="state"></span>   
+                            </label> <font size=2></font><br>
+                            
+                        </div>
+                    </div>
+                </div>
+              </div>
+             </div>
+             <div class="col-md-6">
+                    <div class="m-portlet m-portlet--tab">
+                           <div class="m-portlet__head">
+                                                <label class="title3">Vault</label>
+                                                <br>
+                                                <label class="label2">
+                                                <pre><span class="vault"></span></pre> 
+                                                <font size=2></font>
+                                                </label>
+                                                <br>
+                                                <div id="contrib-stat" style="height: 200px;"></div>
+                                                <br>
+                                                <div class="row" id="eth_transfer">
+                                                    <div class="col-md-4">
+                                                        ETH Amount:<br>
+                                                        <input id='send_amt' class="form-control m-input m-input--air m-input--pill" value=1>
+                                                    </div>
+                                                    <div class="col-md-5">
+                                                        Beneficiary Address:<br>
+                                                        <input id='beneficiary' class="address_val form-control m-input m-input--air m-input--pill" placeholder="Beneficiary Address">
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <br>
+                                                        <a href='#eth_transfer' onClick="JavaScript:get_transfer_node_eth($('#browse_url').val(), $('#beneficiary').val(), $('#send_amt').val())" class="btn btn-primary" id='wd_ether'>Transfer Ether</a>
+                                                    </div>
+                                                 </div>
+                                                 <div class="row" id="eth_transfer_loading" style="display:none">
+                                                    <div class="col-md-12" >
+                                                            <center><img src="images/wait.gif" width=100></center>
+                                                    </div>                                                    
+                                                 </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="health">
+                <center>
+                <label class="title3">Update Device Integrity Status</label>
+                <br>
+                <div class="m-btn-group m-btn-group--pill btn-group m-btn-group m-btn-group--pill btn-group-lg">
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),0)" type="button" class="btn btn-primary">Provisioning</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),1)" type="button" class="btn btn-success">Certified</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),2)" type="button" class="btn btn-info">Modified</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),3)" type="button" class="btn btn-danger">Compromised</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),4)" type="button" class="btn btn-danger">Malfunctioning</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),5)" type="button" class="btn btn-danger">Harmful</button>
+                    <button onClick="JavaScript:setHealth($('#browse_url').val(),6)" type="button" class="btn btn-danger">Counterfeit</button>
+                </div>
+                </center>
+                </div>
+                <div id="health_loading" style="display:none">
+                <center><img src="images/wait.gif" width=100></center>
+                </div>
+                <br><br><br>    
+            </div>
+        </div> 
+        <div class="row">
+            <div class="col-md-12">
+                <div class="m-portlet m-portlet--tab">
+                           <div class="m-portlet__head">
+                               <br>
+                               <center><label class="title3">Transactions</label></center> 
+                                <hr>
+                               <div id='transactions'>
+                               </div>
+                           </div>
+                </div>
+            </div>
+        </div>
+
+</form>
+        
+<p>
+    <div id="log"></div>
+    <div class="catalogue"></div>
+</p>
+
+</div>
+        
+</div>
+</div>
+
+<script>
+var isBrowse=true;
+
+</script>
+
+<script id="ShowMapTemplate" type="text/x-jquery-tmpl">
+            <div class="row" id="location_map">
+                <div class="col-md-12">
+                     <div id="map" style="width:100%;height:300px;"></div>
+                     <input id="pac-input" type="text" placeholder="Search Box" autocomplete="off" style="height:30px;width:300px;" class="m-input m-input--air">
+                     <div class="input-group">
+                     <input class="form-control" type="text" id="lat_name" value="http://www.w3.org/2003/01/geo/wgs84_pos#lat">
+                     <span style="vertical-align:middle;"><h1> = </h1></span>
+                     <input class="form-control" type="text" id="lat" value="${ Latitude }">   
+                     </div>                  
+                     <div class="input-group">
+                     <input class="form-control" type="text" id="long_name" value="http://www.w3.org/2003/01/geo/wgs84_pos#long">
+                     <span style="vertical-align:middle;"><h1> = </h1></span>
+                     <input class="form-control" type="text" id="lng" value="${ Longitude }">   
+                     </div>
+                     <center>
+                     <br>
+                     <button class="btn btn-primary" type="button" onclick="JavaScript:save_location($('#browse_url').val(),$('#lat').val(),$('#lng').val())">Save Location</button>
+                     </center>
+
+                </div>
+            </div>
+            <form id="location_save_loading" style="display:none;">
+            <img src="images/wait.gif"  width=100>
+            </form>
+
+</script>
+
+<% if (!bodyOnly) { %>
+    <script src="js/app.js"></script>
+    <%- include('partials/footer') %>
+<% } else { %>
+    <script>runState();</script>
+<% } %>

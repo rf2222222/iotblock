@@ -1,0 +1,951 @@
+<% if (!bodyOnly) { %>
+    <%- include('partials/header') %>
+<% } else { %>
+<script>
+var isSmartKey=false;
+var isBrowse=false;
+var isWeb=false;
+var isPool=false;
+</script>
+<% } %>
+
+<form id="page1" style="display:none;">
+<div class="row">
+    <div class="col-md-12">    
+                    <center>
+                    <div class="row">
+                        <div class="col-md-12">
+                                  <br><br>
+                                  <center><label class="title1">Create Smart Key<br>(Rinkeby Ethereum Network)</label></center>
+                                  <br>
+                                  
+                                
+                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+            
+                            <div class="row">
+                                <div class="col-md-1" align=right>
+                        
+                                  
+                                </div>
+                                <div class="col-md-3" align=left>
+                                             <label class="label2">Your wallet address:</label>
+                                </div>
+                                <div class="col-md-7" align=left>
+                                             <input name="address" class="address_val inputbox3 form-control m-input m-input--air"  style="width:100%" type="text" id="address" placeholder="" aria-invalid="false" aria-required="false">
+                                 </div>
+                            </div>
+        
+                        </div>
+                    </div>
+                                
+                    <div class="row">
+                        <div class="col-md-12" align=center>    
+                            <br>
+                          <label class="label3">1 ETH is the minimum ETH needed to create Smart Key.</label>
+                        </div>
+                    </div>
+                    <br>
+                    
+            
+                    <div class="row">
+                        <div class="col-md-12">    
+                            <button type="button" id='pool' class="button3 btn btn-accent"><span class="buttonText">Create Smart Key</span></button>
+                            <br><br>
+                            <a href='/' class="link2">Go back to home</a>
+                           
+                        </div>
+                    </div>
+                    </center>
+    </div>
+</div>
+</form>
+<form id="page2_api" style="display:none;">
+<div class="row">
+    <div class="col-md-12">    
+                    <center>
+                    <div class="row">
+                        <div class="col-md-12">
+                                  <br>
+                                  <center><label class="title1">Create Smart Key API Access Token<br>(Rinkeby Ethereum Network)</label></center>
+                                  <br>
+                                  
+                                
+                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+            
+                          <label class="title3">
+                            Wallet
+                          </label>
+                          <br><br>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" align=right>
+                
+                          <label class="label2">Your wallet address:</label>
+                          
+                        </div>
+                        <div class="col-md-8" align=left>
+                            <div  style="width: 400px;height: 30px;" class="border2">
+                                     <center>
+                                     <span class="address label2"></span>
+                                     </center>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                          <br>
+                          <label class="title3">
+                            API Key
+                          </label>
+                          <br><br>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" align=right>
+                
+                          <label class="label2">Email</label>
+                          
+                        </div>
+                        <div class="col-md-8" align=left>
+                          
+                          <input name="username" class="form-control m-input m-input--air m-input--pill"  type="text" id="username" placeholder="" aria-invalid="false" aria-required="false">
+                      
+                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" align=right>
+                
+                          <label class="label2">Select Password</label>
+                          
+                        </div>
+                        <div class="col-md-8" align=left>
+                          
+                          <input name="password" class="form-control m-input m-input--air m-input--pill"  type="password" id="password" placeholder="" aria-invalid="false" aria-required="false">
+                          <br><br>
+                         </div>
+                    </div>
+                    
+            
+                    <div class="row">
+                        <div class="col-md-12">    
+                            <button type="button" id='create_api_key' class="button3 btn btn-accent"><span class="buttonText">Create Smart Key Access Token</span></button>
+                            <br><br>
+                            <a href='/' class="link2">Go back to home</a>
+                        </div>
+                    </div>
+                    </center>
+    </div>
+</div>
+            
+
+</form>
+<form id="loading">
+    <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <span class="middle">
+        <center><img src="images/wait.gif" style="width:100%;"></center>
+        </span>
+    </div>
+    </div>
+
+</form>
+<form id="health_dialog" style="display:none;">
+    <div id="health">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <br>
+                            <br>
+                            <br>
+                            <center>
+                            <label class="title4" style="width: 519px;height: 32px;">Update Device Integrity Status</label>
+                            </center>
+                            <br>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4" align=right>
+                            <label class="label2">Status</label>
+                        </div>
+                        <div class="col-md-8" align=left>
+                            
+                            <select id="health_select" style="width:253px;border-radius:5px;border: solid 1px #d8d8d8;" class="form-control m-input m-input--air" onChange="JavaScript:setHealth(parseInt(this.value));">
+                                <option value="0" class="m--font-primary">Provisioning</option>
+                                <option value="1" class="m--font-success">Certified</option>
+                                <option value="2" class="m--font-info">Modified</option>
+                                <option value="3" class="m--font-danger">Compromised</option>
+                                <option value="4" class="m--font-danger">Malfunctioning</option>
+                                <option value="5" class="m--font-danger">Harmful</option>
+                                <option value="6" class="m--font-danger">Counterfeit</option>
+                            </select>
+                            <br>
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-12" align=center>    
+                          <span class="label3">The fee for this transaction is <span class="donate_amt"></span> ETH.
+                          </span>
+                          <br>
+                          <br>
+                                   
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <center>
+                            <button   style="width: 384px;height:56px;"  onclick="JavaScript:$('#health_select').trigger('change');"  
+                            class="button3 btn btn-primary" 
+                            type="button">
+                            <span class="buttonText">Update</span></button>
+                            </center>
+                            <br><br>
+                        </div>
+                    </div>
+    </div>
+    <div id="health_loading" style="display:none">
+    <center><img src="images/wait.gif" width=100></center>
+    </div>
+</form>
+<form id="page2" style="display:none;">
+<div class="row">
+    <div class="col-md-12">    
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">    
+        
+
+                    <div class="row">
+                        <div class="col-md-12">    
+                          <br>
+                             <center>
+                            <label class="title2" style="padding-top:5px;">Smart Key Contract Address (Rinkeby Ethereum Network)</label>
+                            <br><br>
+                            <center><span class="inputbox4"><span class="label5" style="" id='poolkey'></span></span></center>
+                            <hr>
+                            </center>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <center>
+                            <label class='title2'>Smart Key Status</label>                            
+                            </center>
+                            <br>
+                        </div>
+                    </div>
+                            
+                    <div class="row">
+                        <div class="col-md-6" align=right>
+                            <label class='label6'>Balance</label>
+                        </div>
+                        <div class="col-md-6" aligh=left>
+                            <span class="label7 eth_balance"></span>
+                            <font size=2>ETH</font><br>
+                        </div>
+                    </div>                            
+                                                
+                    <div class="row">
+                        <div class="col-md-6" align=right>
+                    
+                            <label class='label6'>Received</label>
+                        </div>
+                        <div class="col-md-6" align=left>
+                            <span class="label7 eth_received"></span>
+                            <font size=2>ETH</font>
+                        </div>
+                    </div>
+
+                    
+                     <div class="row">
+                        <div class="col-md-6" align=right>    
+                            <label class='label6'>Device Integrity Status</label>
+                        </div>
+                        <div class="col-md-2" align=left>
+                                <label class="label7">
+                                    <span class='health'></span>
+                                </label>
+                        </div>
+                        <div class="col-md-4" align=left>
+                                    <button onclick="JavaScript:showHealthDialog()"  
+                                    class="form-control button3 btn btn-primary" 
+                                    type="button">
+                                        <span class="buttonText">Update Integrity Status</span>
+                                    </button>
+                            
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-md-6" align=right>    
+                            <label class='label6'>Key State</label>
+                        </div>
+                        <div class="col-md-6" align=left>
+                            <label class="label7 title3"><span class="state"></span></label> 
+                            <font size=2></font>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <hr>
+                        </div>
+                    </div>    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <center>
+                            <label class='title2'>Transfer ETH</label>                            
+                            </center>
+                            <br>
+                        </div>
+                    </div>
+                    <div id="eth_transfer">
+                        <div class="row">
+                            <div class="col-md-6" align=right>
+                                <label class="label6">ETH Amount:</label>
+                            </div>
+                            <div class="col-md-6" align=left>                                                
+                                <input id='send_amt' class="form-control m-input m-input--air m-input--pill" value=1>
+                                <br>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6" align=right>
+                                <label class="label6">Beneficiary Address:</label>
+                            </div>
+                            <div class="col-md-6" align=left>                                                
+                            
+                                <input id='beneficiary' class="address_val form-control m-input m-input--air m-input--pill" placeholder="Beneficiary Address">
+                                <br>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6" align=right>
+                            </div>
+                            <div class="col-md-6">
+                                <a href='#eth_transfer' onClick="JavaScript:get_transfer_user_eth($('#beneficiary').val(), $('#send_amt').val())" class="button3 form-control btn btn-primary" id='wd_ether'><span class="buttonText">Transfer Ether</span></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="eth_transfer_loading" style="display:none">
+                        <center><img src="images/wait.gif" width=100></center>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <hr>
+                        </div>
+                    </div>    
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <center>
+                            <label class='title2'>API Key</label>                          
+                            </center>  
+                            <br>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6" align=right>    
+                                            <label class="label6">ETH Donation per Transaction:</label>
+                        </div>
+
+                        <div class="col-md-6" align=left>
+                                    <div id="view_api">
+                                            <div class="input-group">
+                                                <select id="eth_contrib" style="width:253px;height:45px;border-radius:5px;border: solid 1px #d8d8d8;" class="form-control m-input m-input--air">
+                                                    <option value='0.0001'>0.0001 ETH</option>
+                                                    <option value='0.001'>0.001 ETH</option>
+                                                    <option value='0.01'>0.01 ETH</option>
+                                                    <option value='0.1'>0.1 ETH</option>
+                                                    <option value='1'>1 ETH</option>
+                                                    
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <button   onclick="JavaScript:get_api_key()"  class="form-control button3 btn btn-primary" type="button" ><span class="buttonText">View API Key</span></button>
+                                                </div>
+                                            </div>
+                                            <br>
+                                    </div>
+                                    <div id="view_api_loading" style="display:none">
+                                        <center><img src="images/wait.gif" width=100></center>
+                                    </div>
+                                    <div id="new_api_key" style="display:none;">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                            </div>
+                                            <div class="col-md-8">
+                                                      
+                                                     <center>
+                                                     <h3>Authorization API KEY: </h3><pre style="width:100%; height:100px;"><span class="auth_key"></span></pre>
+                                                     </center>
+                                                     <br>
+                                            </div>
+                                            <div class="col-md-2">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                   
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6" align=right>    
+                                    <label class='label6'>Replace API Key</label>                                                   
+                        </div>
+                        <div class="col-md-6" align=left>
+                                    <div id="replace_api">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <input name="new_username" class="form-control m-input m-input--air m-input--pill"  type="text" id="new_username" placeholder="Email Address" aria-invalid="false" aria-required="false">                                                
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input name="new_password" class="form-control m-input m-input--air m-input--pill"  type="password" id="new_password" placeholder="Select Password" aria-invalid="false" aria-required="false">
+                                                <br>
+                                            </div>               
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <center>
+                                                    <a href="#auth" onclick="JavaScript:generate_api_key()" class="form-control button3 btn btn-primary" ><span class="buttonText">Regenerate API Key</span></a>
+                                                </center>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="replace_api_loading" style="display:none">
+                                        <center><img src="images/wait.gif" width=100></center>
+                                    </div>
+
+                        </div>      
+                    </div>
+                                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <hr>
+                        </div>
+                    </div>
+                   
+        
+                    <div class="row">
+                        <div class="col-md-12">
+                                           <center><label class="title2">Transactions</label></center> 
+                                            <hr>
+                                           <div id='transactions'>
+                                           </div>
+                        </div>
+                    </div>
+    </div>
+</div>            
+
+
+</form>
+<script>
+var isSmartKey=true;
+var myAddress='0x0';
+var keyAddress='0x0';
+var api_key='';
+var api_auth='';
+
+
+function add_auth(xhr) {
+        var eth1=1000000000000000000;
+        var eth_contrib=parseFloat($('#eth_contrib').val()) * eth1;
+        var data="Token api_key=\"" + api_key + "\" auth=\"" + api_auth + "\" eth_contrib=\"" + eth_contrib + "\"";
+        data=btoa(data);
+        data=btoa(data + ':' + '');
+        xhr.setRequestHeader("Accept","application/vvv.website+json;version=1");
+        xhr.setRequestHeader("Authorization", data); 
+
+}
+
+var page1_init=false;
+var page2_api_init=false;
+var health_init=false
+
+function showPage1() {
+    page1_init=true;
+    $('#page1').dialog({
+      dialogClass: "no-close",
+      closeText: "hide",
+      modal: true,
+      width: '95%',
+      height: '400',
+    });  
+    
+}
+
+function hidePage1() {
+   if (page1_init) {
+       if ($('#page1').dialog( "isOpen" )) {
+        $('#page1').dialog( "close" );
+       }
+   } else {
+        $('#page1').hide();
+   
+   }
+}
+
+function showPage2_api() {
+    page2_api_init=true;
+    $('#page2_api').dialog({
+      dialogClass: "no-close",
+      closeText: "hide",
+      modal: true,
+      width: '770px',
+      height: '565',
+    });
+    
+  
+}
+
+function hidePage2_api() {
+   if (page2_api_init) {
+       if ($('#page2_api').dialog( "isOpen" )) {
+        $('#page2_api').dialog( "close" );
+      }
+   } else {
+        $('#page2_api').hide();
+   }
+}
+
+function page2_api(auth, auth_info, key_address) {
+   //$('#page2').show();
+
+   myAddress=auth;
+   keyAddress=key_address;
+   if (key_address.length == 0) {
+        $('#loading').hide();
+        showPage1() ;
+        $('#page2').hide();
+        hidePage2_api();
+   } else if (auth_info.length == 0) {
+        $('#loading').hide();
+        hidePage1();
+        $('#page2').hide();
+        showPage2_api();
+   } else {
+        $('#loading').show();
+        hidePage1();
+        $('#page2').hide();
+        hidePage2_api();
+        api_key=auth_info;
+        api_auth=auth;
+        get_smart_key_info(address);
+   }
+   //$('#page2').show();
+
+}
+
+function showHealthDialog() {
+    health_init=true;
+    $('.donate_amt').html($('#eth_contrib').val());
+    $('#health_dialog').dialog({
+      dialogClass: "no-close",
+      closeText: "hide",
+      modal: true,
+      width: '770px',
+      height: '400',
+    });  
+    
+}
+
+function hideHealthDialog() {
+   if (health_init) {
+       if ($('#health_dialog').dialog( "isOpen" )) {
+        $('#health_dialog').dialog( "close" );
+       }
+   } else {
+        $('#health_dialog').hide();
+   
+   }
+}
+
+
+function fill_api_info(auth, auth_info) {
+    $('#view_api').show();
+    $('#view_api_loading').hide();
+    $('#new_api_key').show();
+    //$('.auth').html(auth);
+    var eth1=1000000000000000000;
+    var eth_contrib=parseFloat($('#eth_contrib').val()) * eth1;
+    api_key=auth_info;
+    api_auth=auth;
+
+    var data="Token api_key=\"" + api_key + "\" auth=\"" + api_auth + "\" eth_contrib=\"" + eth_contrib + "\"";
+    data=btoa(data);
+    data=btoa(data + ':' + '');
+    $('.auth_key').html(data);
+    
+}
+
+function fill_new_api_info(auth, auth_info) {
+    $('#replace_api').html('New API Key Generated');
+    $('#replace_api_loading').hide();
+    $('#new_api_key').show();
+    fill_api_info(auth, auth_info);
+        
+}
+    
+function get_api_key() {
+    //alert(myAddress.toLowerCase());
+    $('#view_api').hide();
+    $('#view_api_loading').show();
+    get_keyAuth(myAddress.toLowerCase(), fill_api_info);
+     
+}
+
+function generate_api_key() {
+    $('#replace_api').hide();
+    $('#replace_api_loading').show();
+    var username=$('#username').val();
+    var password=$('#password').val();
+    var auth_key=beneficiary + ":" + username + ":" + password;
+    auth_key=auth_key.toLowerCase()
+
+    add_keyAuth(myAddress.toLowerCase(), myAddress.toLowerCase(), auth_key, fill_new_api_info) 
+     
+}
+
+function get_smart_key_info(address) {
+
+    
+    $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+        
+                //setHeaders(xhr);
+            
+            },
+            type: 'GET',
+            url: '/cat/getSmartKey?address=' + encodeURI(address),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                fill_page2(address, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["tokens"], body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+function get_smartkey_transactions(href, offset, limit) {
+   $('.loadmore').hide();
+   $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+            },
+            type: 'GET',
+            url: '/cat/getSmartKeyTx?address=' + encodeURI(address) + '&offset=' + encodeURI(offset) + '&limit=' + encodeURI(limit),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+                if (parseInt(offset) == 0) {
+                    $('#transactions').html('');
+                }
+                var transactions=body["transactions"];
+                for (var i=0; i < transactions.length; i++) {
+                    var account=transactions[i]["account"];
+                    var date=transactions[i]["date"];
+                    var amount=transactions[i]["amount"];
+                    var tx_type=transactions[i]["tx_type"];
+                    fill_page2_transactions(account, date, amount, tx_type)
+                }
+                var count=parseInt(body["count"]);
+                fill_page2_transactions_load_more(href, offset, limit, count);
+                
+            },
+            error: function(xhr, textStatus, err) {
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+function fill_page2_transactions(sender, date, amount, tx_type) {
+        console.log(sender, date, amount);
+        var dateTime = new Date(parseInt(date) * 1000);
+        date=dateTime.toISOString(); 
+        var eth1=1000000000000000000;
+        var tx='Incoming';
+        if (tx_type > 0) {
+            tx='Outgoing';
+        }
+        var html ="<div class='row label8'><div class=col-md-3>";
+        html +='<b>Date:</b><br> ' + date + "</div><div class=col-md-5>";
+        html +='<b>Address:</b><br> ' + sender + "</div><div class=col-md-2>";
+        html +='<b>Type:</b><br> ' + tx + "</div><div class=col-md-2>";
+        html +='<b>Amount:</b><br> ' + amount/eth1 + " ETH </div>";
+        html +="<hr></div><br>";
+        
+        $('#transactions').append(html);
+}
+    
+function fill_page2_transactions_load_more(href, offset, limit, count) {
+        offset=parseInt(offset)
+        offset+=limit;
+        if (offset < count) {
+            var html ="<div class='row label8 loadmore'><div class=col-md-12><center>";
+            html +='<a href="#transactions" class="button3 form-control btn btn-primary" onClick="JavaScript:get_smartkey_transactions(\'' + href + '\', ' + offset + ', ' + limit + ');"><span class="buttonText">Load More</span></a>'
+            html +="</center><br><br></div>";
+            
+            $('#transactions').append(html);
+        }
+
+}    
+
+
+function get_transfer_user_eth(beneficiary, amount) {
+   var eth1=1000000000000000000;
+   var amt=parseFloat(amount) * eth1;
+   $('#eth_transfer').hide();
+   $('#eth_transfer_loading').show();
+   $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+            },
+            type: 'GET',
+            url: '/cat/transferUserEth?address=' + encodeURI(myAddress) + '&beneficiary=' + encodeURI(beneficiary) + '&amount=' + encodeURI(amt),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+               $('#eth_transfer').show();
+               $('#eth_transfer_loading').hide();
+                fill_page2(myAddress, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["tokens"], body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+               $('#eth_transfer').show();
+               $('#eth_transfer_loading').hide();
+               log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+
+function setHealth(health) {
+   var health=parseInt(health)
+   hideHealthDialog();
+   $.ajax({
+            beforeSend: function(xhr){
+                add_auth(xhr);
+            },
+            type: 'GET',
+            url: '/cat/setUserHealth?address=' + encodeURI(myAddress) + '&health=' + encodeURI(health),
+            //data: JSON.stringify(user_item),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            success: function(body, textStatus, xhr) {
+               $('#health').show();
+               $('#health_loading').hide();
+                fill_page2(myAddress, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["tokens"],  body["isOwner"]);
+            },
+            error: function(xhr, textStatus, err) {
+               $('#health').show();
+               $('#health_loading').hide();
+                log(xhr.status + ' ' + xhr.statusText);
+            }
+        });
+}
+
+
+function fill_page2(userAddress, address, balance, eth_recv, vault, state, health, tokens, isOwner) {
+   console.log(userAddress, address, balance, eth_recv, vault, state, health, tokens);
+   $('#loading').show();
+   hidePage1();
+   $('#page2').hide();
+   hidePage2_api();
+
+    if (address == '0' || address == '0x0000000000000000000000000000000000000000') {
+        showPage1() ;
+        $('#loading').hide();
+        $('#page2').hide();
+        return;
+    } else {
+       myAddress=userAddress;
+       keyAddress=address;
+       var eth1_amount=1000000000000000000       
+       balance/=eth1_amount;
+       eth_recv/=eth1_amount;
+       tokens/=eth1_amount;
+       var states=[ 'Issued', 'Active', 'Returned' ]
+       var healthStates = ['Provisioning', 'Certified', 'Modified', 'Compromised', 'Malfunctioning', 'Harmful', 'Counterfeit' ]
+       
+       //hidePage1();
+       $('#loading').hide();
+       $('#page2').show();
+
+       if (isOwner) {
+           $('#eth_transfer').show();
+           
+       } else {
+           $('#eth_transfer').hide();
+       
+       }
+       
+       $('.token_balance').html(tokens);
+       $('.eth_balance').html(balance);
+       $('.eth_received').html(eth_recv);
+       $('.vault').html( vault );
+       $('.state').html( states[state] );
+       $('.health').html( healthStates[health] );
+       $('.progress-bar').val( balance / eth_recv * 100 );
+       $('#poolkey').html('<pre>' + address + '</pre>');
+       
+       /*
+       $('#contrib-stat').html('');
+       
+       Morris.Donut({
+          element: 'contrib-stat',
+          data: [
+            {label: "Received ETH", value:  eth_recv},
+            {label: "Available ETH", value:  balance},
+          ]
+        });
+        
+        */
+        
+        $('#send_ether').on('click', function(e) {
+               var eth1=1000000000000000000;
+               var amt=parseInt($('#send_amt').val()) * eth1;
+               send_ether(address, amt);
+       });       
+   }
+   $('#transactions').html('');
+   get_smartkey_transactions(userAddress,0,10);
+
+   
+}  
+
+
+function page2(address) {
+   get_keyAuth(address, page2_api) 
+
+}
+
+$( document ).ready(function() {
+    
+    $('#fee').on('change', function(e) {
+        $('#fee_struct').show();
+        var you_msg = you + '%';
+        
+        var fee=parseFloat($('#fee').val());
+        var you=fee - 0.5;
+        $('#you').html(you_msg);
+        var total_msg = fee  + '%';
+        $('#total').html(total_msg);
+                
+        
+    });
+    
+    $('#find_poolkey_btn').on('click',function(e) {
+         var poolkey=$('#find_poolkey').val();
+         page2(poolkey);
+    });
+
+    $('#create_api_key').on('click', function (e) {
+    
+        var username=$('#username').val();
+        var password=$('#password').val();
+        var auth_key=myAddress + ":" + username + ":" + password;
+        auth_key=auth_key.toLowerCase();
+        myAddress=myAddress.toLowerCase();
+        //alert(auth_key);
+        $('#loading').show();
+        hidePage1();
+        $('#page2').hide();
+        hidePage2_api();
+        
+        add_keyAuth(myAddress, myAddress, auth_key,  page2_api); 
+        
+    });
+    $('#pool').on('click', function (e) {
+        var fee=Math.round(1 / parseFloat($('#fee').val() / 100));
+        var whitelist=[];
+        var admins=[];
+        var has_whitelist=false;
+
+        /*
+        if ($('#whitelist1').val().length > 0) {
+            whitelist.push($('#whitelist1').val());
+        }
+        if ($('#whitelist2').val().length > 0) {
+            whitelist.push($('#whitelist2').val());
+        }
+        if ($('#whitelist3').val().length > 0) {
+            whitelist.push($('#whitelist3').val());
+        }
+        if ($('#has_whitelist')[0].checked) {
+            has_whitelist=true;
+        }
+        
+        if ($('#admin1').val().length > 0) {
+            admins.push($('#admin1').val());
+        }
+        if ($('#admin2').val().length > 0) {
+            admins.push($('#admin2').val());
+        }
+        if ($('#admin3').val().length > 0) {
+            admins.push($('#admin3').val());
+        }
+        var max_contrib=parseInt($('#max_contrib').val()) * eth1;
+        var max_per_contrib=parseInt($('#max_per_contrib').val()) * eth1;
+        var min_per_contrib=parseInt($('#min_per_contrib').val()) * eth1;
+        */
+        
+        var eth1=1000000000000000000;
+        
+        var beneficiary=$('#address').val();
+        function key_created(address) {
+            myAddress=beneficiary;
+            keyAddress=address;
+            
+            /*
+            $.ajax({
+                //beforeSend: function(xhr){setHeaders(xhr);},
+                type: 'GET',
+                url: '/cat/getSmartKey?address=' + encodeURI(myAddress),
+                //data: JSON.stringify(user_item),
+                contentType: "application/json; charset=utf-8",
+                dataType: 'json',
+                success: function(body, textStatus, xhr) {
+                    page2(myAddress);
+                },
+                error: function(xhr, textStatus, err) {
+                    log(xhr.status + ' ' + xhr.statusText);
+                }
+            });
+            location.href="key.html";
+            */
+            
+            
+            setTimeout(function () { page2(myAddress) }, 10000)
+        }
+        $('#loading').show();
+        hidePage1();
+        $('#page2').hide();
+        hidePage2_api();
+        
+        add_smartkey(beneficiary,key_created); 
+        
+    });
+    
+   
+});
+</script>
+
+<% if (!bodyOnly) { %>
+    <script src="js/app.js"></script>
+    <%- include('partials/footer') %>
+<% } else { %>
+    <script>runState();</script>
+<% } %>

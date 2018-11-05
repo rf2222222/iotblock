@@ -9,30 +9,25 @@ contract MetaData is Administered {
   string public rel;
   string public val;
  
-  event MetaDataRel(address indexed user, MetaData indexed metaDataContract, string rel);
-  event MetaDataVal(address indexed user, MetaData indexed metaDataContract, string rel, string val);
-
-  function MetaData(SmartKey _smartKey, address[] adminAddress, string _rel) 
+  string[] public val_history;
+  function MetaData(SmartKey _smartKey, address[] adminAddress, string _rel, string _val) 
   public
   Administered(adminAddress)
   {
       smartKey=_smartKey;
       rel=_rel;
-      MetaDataRel(msg.sender, this, rel);
+      val=_val;
   }
   
   function setVal(string _val) 
   public
   onlyAdmin
-  payable
   returns (bool)
   {
   
-      smartKey.getSmartKey.value(msg.value)(address(this));
-
+      val_history.push(_val);
       val=_val;
       
-      MetaDataVal(msg.sender, this, rel, val);
       return true;
   }
   

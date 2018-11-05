@@ -1,0 +1,358 @@
+<html lang="en">
+<head>
+<script>
+var site_url="<%= config.site_url %>";
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1 user-scalable=no"/>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<link rel="stylesheet" type="text/css" href="css/diQuery-collapsiblePanel.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="js/jquery.scrollTo-1.4.2-min.js"></script>
+<script type="text/javascript" src="js/URI.js"></script>
+<script type="text/javascript" src="js/springy.js"></script>
+<script type="text/javascript" src="js/springyui.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script type="text/javascript" src="js/diQuery-collapsiblePanel.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+<script src="https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCUU90mGUU8I7wHFPfteUJmZHdy-CSOApM&libraries=places&sensor=true" async="" defer=""></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/style.bundle.css">
+<link rel="stylesheet" type="text/css" href="css/vendors.bundle.css">
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {"families":["Poppins:300,400,500,600,700","Roboto:300,400,500,600,700"]},
+    active: function() {
+        sessionStorage.fonts = true;
+    }
+  });
+</script>
+<style>
+.Logo {
+  width: 136px;
+  height: 40px;
+  object-fit: contain;
+}
+.Home {
+  width: 30px;
+  height: 27.8px;
+  object-fit: contain;
+}
+.primary-item {
+  width: 138px;
+  height: 15px;
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.07;
+  letter-spacing: normal;
+  text-align: left;
+  color: #ffffff;
+}
+
+.secondary-item {
+  width: 138px;
+  height: 15px;
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.07;
+  letter-spacing: normal;
+  text-align: left;
+  color: #5c6eb4;
+}
+
+.title2 {
+  font-family: Poppins;
+  font-size: 20px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: center;
+  color: #000000;
+}
+
+.title3 {
+  font-family: Poppins;
+  font-size: 18px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.67;
+  letter-spacing: normal;
+  text-align: center;
+  color: #4a4a4a;
+}
+
+.title4 {
+  width: 519px;
+  height: 32px;
+  font-family: Poppins;
+  font-size: 24px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: center;
+  color: #4a4a4a;
+}
+.inputbox2 {
+  border-radius: 5px;
+  border: solid 1px #d8d8d8;
+}
+
+.inputbox3 {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+}
+
+.inputbox4 {
+  width: 416px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  overflow:hidden;
+}
+
+
+.label2 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.14;
+  letter-spacing: normal;
+  text-align: right;
+  color: #4a4a4a;
+}
+.label3 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.14;
+  letter-spacing: normal;
+  text-align: center;
+  color: #e99812;
+}
+
+
+.label4 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.14;
+  letter-spacing: normal;
+  text-align: left;
+  color: #4a4a4a;
+}
+
+.label5 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  text-align: center;
+  color: #4a4a4a;
+  line-height: 3.14;
+  letter-spacing: normal;
+}
+
+
+.label6 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.29;
+  letter-spacing: normal;
+  text-align: right;
+  color: #000000;
+}
+
+.label7 {
+  width: 83px;
+  height: 32px;
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.29;
+  letter-spacing: normal;
+  text-align: left;
+  color: #000000;
+}
+.label7 .text-style-1 {
+  font-weight: normal;
+}
+
+.label8 {
+  font-family: Poppins;
+  font-size: 12px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.33;
+  letter-spacing: normal;
+  text-align: left;
+  color: #000000;
+}
+
+.button2 {
+  border-radius: 3px;
+  background-image: linear-gradient(67deg, #5c6eb4, #4bc9f4);
+}
+
+.button3 {
+  border-radius: 3px;
+  background-color: #4a90e2;
+  height:45px;
+}
+
+
+.buttonText {
+  font-family: Poppins;
+  font-size: 16px;
+  height:20px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: 0.2px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.text2 {
+  font-family: Poppins;
+  font-size: 15px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.14;
+  letter-spacing: normal;
+  text-align: left;
+  color: #000000;
+}
+
+.title1 {
+  font-family: Poppins;
+  font-size: 18px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: center;
+  color: #4a4a4a;
+}
+.title1 .text-style-1 {
+  font-size: 24px;
+}
+
+
+.link2 {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 2.14;
+  letter-spacing: normal;
+  text-align: center;
+  color: #5c6eb4;
+}
+
+.border2 {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+}
+
+.no-close .ui-dialog-titlebar-close  {
+  display: none;
+}
+
+.no-close .ui-dialog-titlebar {
+  display: none;
+}
+
+.nav-title {
+  font-family: Poppins;
+  font-size: 14px;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  color: #4a90e2;
+}
+
+.middle {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
+
+</head>
+<body style="background-color: #f5f5f5; ">
+<div class="m-portlet__head" style="background-color: #ffffff; box-shadow: 0 2px 7px 0 rgba(160, 160, 160, 0.5);">
+                    <div class="row">
+                        <div class="col-md-12" align=left style="height:73px">
+                            <br>
+                            <span align=left>
+                             <a href='/icatOS/'>
+                             <img style="margin-left:16px;height:40px;" src="images/logo.svg" class="Logo">
+                             </a>
+                            </span>
+                            <span align=right>
+                             <a href='/icatOS/'>
+                             <img src="images/home.svg" class="Home" style="margin-right:16px;" align="right">
+                             </a>
+                            </span>
+                        </div>
+                    </div>
+</div>
+<br>
+
+<div class="m-portlet__head" style="box-shadow: 0 2px 7px 0 rgba(160, 160, 160, 0.5);border: solid 1px #e7e7e7;margin-left:32px;margin-right:32px;">
+    <div class="row" style="background-color: #ffffff;" >
+                        <div class="col-md-2 col-sm-2 col-xs-2 mt-0" style="border-radius:0px;padding: 0px;text-align:left;border: solid 1px #e7e7e7;" id="nav_left">
+                                 <% nav.forEach((item) => { %>
+                                   <a 
+                                    <%if (item.target) { %>  href='<%=item.href%>' target='<%=item.target%>'
+                                    <% } else { %> 
+                                      href='#' onClick="JavaScript:get_link('<%=item.href %>', this);"
+                                    <% } %>
+                                      >
+                                             <div style="width:100%;height:70px;text-align:left;<%if (item.selected) { %>background-color: #4a90e2;box-shadow: inset 0 0 6px 0 rgba(103, 103, 103, 0.5);<% } else { %>box-shadow: inset 0 0 0px 0 rgba(63, 63, 63, 0.5);<% } %> " 
+     									class="nav_menu" >
+        										<span style="padding-left:16px;position: relative;top: 40%;transform: translateY(-50%);"
+        										class="nav_menu_item <%if (item.selected) { %>primary-item <% } else { %> secondary-item nav-title <% } %> ">
+                                                 <%= item.name %>
+                                                 </span>
+    										</div>
+    								</a>
+                                <% }) %>
+                        </div>    								
+                        <div class="col-md-9 col-sm-9 col-xs-9" style="" id="nav_body">
+                                     
