@@ -266,21 +266,16 @@ render() {
                     <li>
                     <pre
                       style={{
-
+                        whiteSpace: "pre-wrap",  
                         maxWidth:"88%"
 
                     }}
                     >
-                    <a href={"#top"}
-                       onClick={()=>{
-
-                           self.props.browse(item.href, () => {
-
-                           });
-                       }}
+                    <a href={"/iotpedia/editor?url=" + item.href}
                        >
                        {item.href}
                     </a>
+                    
                     </pre>
                         <br/>
                     {self.state.dataLoading ? (
@@ -420,11 +415,16 @@ render() {
                     <li>
                     <pre
                       style={{
-
+                        whiteSpace: "pre-wrap",  
                         maxWidth:"88%"
 
                     }}
                     >
+                     <a href={"/iotpedia/editor?url=" + item.href}
+                       >
+                       {item.href}
+                    </a>
+                    {/*
                     <Link to={{ 
                         pathname: '/view',
                         url:item.href
@@ -432,6 +432,7 @@ render() {
                        >
                        {item.href.replace("https://iotblock.io/cat/","")}
                     </Link>
+                    */}
                     </pre>
                     <br/>
                     {self.state.dataLoading ? (

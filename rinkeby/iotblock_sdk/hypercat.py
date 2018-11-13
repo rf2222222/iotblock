@@ -162,7 +162,7 @@ class Hypercat(Base):
 
     def __init__(self, description, metadata=None):
         Base.__init__(self)
-        assert isinstance(description, str), "Description argument must be a string"
+        #assert isinstance(description, str), "Description argument must be a string"
         # TODO: Check description is ASCII, since JSON can only encode that
         if metadata:
             self.metadata=_meta(metadata)
@@ -255,14 +255,14 @@ class Resource(Base):
         j[ITEM_METADATA] = self.metadata
         j[HREF] = self.href
         return j
-    
-def loads(inputStr):
-    """Takes a string and converts it into an internal hypercat object, with some checking"""
-    inCat = json.loads(inputStr)
+
+
+def loadJson(inCat):
+
     assert CATALOGUE_TYPE in _values(inCat[CATALOGUE_METADATA], ISCONTENTTYPE_RELATION)
     # Manually copy mandatory fields, to check that they are they, and exclude other garbage
     desc = _values(inCat[CATALOGUE_METADATA], DESCRIPTION_RELATION)[0]  # TODO: We are ASSUMING just one description, which may not be true
-    outCat = Hypercat(desc, inCat[ITEM_METADATA])
+    outCat = Hypercat(desc, inCat[CATALOGUE_METADATA])
     for i in inCat[ITEMS]:
         href = i[HREF]
         print(i[ITEM_METADATA])
@@ -274,10 +274,10 @@ def loads(inputStr):
             descs = _values(i[ITEM_METADATA], DESCRIPTION_RELATION)
             if (len(descs) > 0):
                 desc=descs[0]
-            if contentType == CATALOGUE_TYPE:
-                r = Hypercat(desc, i[ITEM_METADATA])
-            else:
-                r = Resource(desc, contentType)
+            #if contentType == CATALOGUE_TYPE:
+            r = Hypercat(desc, i[ITEM_METADATA])
+            #else:
+            #    r = Resource(desc, contentType)
             
 
             for k in i[ITEMS]:
@@ -291,14 +291,19 @@ def loads(inputStr):
                     descs = _values(k[ITEM_METADATA], DESCRIPTION_RELATION)
                     if (len(descs) > 0):
                         desc=descs[0]
-                    if contentType == CATALOGUE_TYPE:
-                        item_r = Hypercat(desc, k[ITEM_METADATA])
-                    else:
-                        item_r = Resource(desc, contentType)
+                    #if contentType == CATALOGUE_TYPE:
+                    item_r = Hypercat(desc, k[ITEM_METADATA])
+                    #else:
+                    #    item_r = Resource(desc, contentType)
                     r.addItem(item_r, item_href)
             outCat.addItem(r, href)
 
     return outCat
+
+def loads(inputStr):
+    """Takes a string and converts it into an internal hypercat object, with some checking"""
+    inCat = json.loads(inputStr)
+    loadJson(inCat)
 
 #if __name__ == '__main__':
 #    # Unit tests

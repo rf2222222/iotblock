@@ -12,15 +12,16 @@ import contract from 'truffle-contract';
 import BigNumber from 'bignumber.js';
 import createKeccak from 'keccak';
 import shajs from 'sha.js'
-
+import {providerUrl, wsUrl} from '../../providerOptions'
 Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send;
 
-   
+ 
   
   
   //var providerUrl = "https://iotblock.io/rpc";
   //var providerUrl = "http://localhost:9545";
-  var providerUrl = "https://rinkeby.infura.io/8BNRVVlo2wy7YaOLcKCR";
+//  var providerUrl = "https://rinkeby.infura.io/v3/5a4e19427c10436fbbbf6b6526e37ba0";
+  //var wsUrl = "wss://rinkeby.infura.io/ws"
   var host=providerUrl;
       
   
@@ -44,7 +45,15 @@ export const create_wallet = (eth_salt, call_back) => {
             var WalletSubprovider = require('web3-provider-engine/subproviders/wallet.js');
             //var Web3Subprovider = require("web3-provider-engine/subproviders/web3.js");
             var RpcSubprovider = require('web3-provider-engine/subproviders/rpc.js')
+            var WebsocketSubprovider = require('web3-provider-engine/subproviders/websocket.js')
             var hdwallet = hdkey.fromMasterSeed(user); //bip39.mnemonicToSeed(mnemonic + user));
+            
+            const CacheSubprovider = require('web3-provider-engine/subproviders/cache.js')
+            const FixtureSubprovider = require('web3-provider-engine/subproviders/fixture.js')
+            const FilterSubprovider = require('web3-provider-engine/subproviders/filters.js')
+            const VmSubprovider = require('web3-provider-engine/subproviders/vm.js')
+            const NonceSubprovider = require('web3-provider-engine/subproviders/nonce-tracker.js')
+            const SubSubprovider = require('web3-provider-engine/subproviders/subscriptions.js')
             
             // Get the first account using the standard hd path.
             var wallet_hdpath = "m/44'/60'/0'/0/";
@@ -56,13 +65,74 @@ export const create_wallet = (eth_salt, call_back) => {
             
             window.address=address;
             window.account=address;
+
+            // static results
+            /*
+            engine.addProvider(new FixtureSubprovider({
+                web3_clientVersion: 'ProviderEngine/v0.0.0/javascript',
+                net_listening: true,
+                eth_hashrate: '0x00',
+                eth_mining: false,
+                eth_syncing: true,
+            }))
+            */
+
+            // cache layer
+            //engine.addProvider(new CacheSubprovider())
+            
+            // filters
+            //engine.addProvider(new FilterSubprovider())
+            
+            // pending nonce
+            //engine.addProvider(new NonceSubprovider())
+            
+            // vm
+            //engine.addProvider(new VmSubprovider())
     
             engine.addProvider(new WalletSubprovider(wallet, {}));
-            engine.addProvider(new RpcSubprovider({
-                rpcUrl: providerUrl,
+            
+            //engine.addProvider(new RpcSubprovider({
+            //    rpcUrl: providerUrl,
+            //}))
+            
+            var subP=new SubSubprovider();
+            subP.on('data', (err, notification) => {
+                engine.emit('data', err, notification)
+              })
+            engine.addProvider(subP);
+
+            engine.addProvider(new WebsocketSubprovider({
+               rpcUrl: wsUrl
             }))
+            
         
-            window.web3 = new Web3(engine);
+            var web3 = new Web3(engine);
+            web3.currentProvider.setMaxListeners(1000);
+            
+            
+            engine.on('block', function(block){
+                console.log('================================')
+                console.log('BLOCK CHANGED:', '#'+block.number.toString('hex'), '0x'+block.hash.toString('hex'))
+                console.log('================================')
+              })
+            
+            const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
+                if (error) return console.error(error);
+              
+                console.log('Successfully subscribed!', blockHeader);
+              }).on('data', (blockHeader) => {
+                console.log('data: ', blockHeader);
+              });
+              
+              // unsubscribes the subscription
+              subscription.unsubscribe((error, success) => {
+                if (error) return console.error(error);
+              
+                console.log('Successfully unsubscribed!');
+              });
+            
+              
+            window.web3=web3;
             engine.start(); // Required by the provider engine.
           }
           console.log(window.address);

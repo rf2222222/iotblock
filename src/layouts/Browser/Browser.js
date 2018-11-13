@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import PropTypes from "prop-types";
 import * as actions from "../../store/actions";
 import { connect, Provider } from "react-redux";
-import BrowserMapInfo from "./BrowserMapInfo";
 import MetaData from "./MetaDataDAO";
 import Catalogue from "./CatalogueDAO";
 import * as web3Utils from "../../util/web3/web3Utils";
@@ -115,7 +114,7 @@ export default class Browser extends Component {
             
 
     };
-    this._isMounted = false;
+    //this._isMounted = false;
   }
 
   
@@ -128,7 +127,6 @@ fill_api_info = (auth, auth_info, user_key_address) => {
         
     //$('.auth').html(auth);
     this.setState({
-        loading:false,
         api_key:auth_info,
         api_auth:auth
     });
@@ -154,6 +152,7 @@ add_auth = (xhr) => {
 browseCatalogue = () => {
     var self=this;
     self.browse($('#browse_url').val(), function() {
+        
     });
 }
 
@@ -172,8 +171,11 @@ parseCatalogue = (doc) => {
     console.log(doc);
     var eth1_amount=1000000000000000000;
     doc.id="res";
-    var url='/cat';
-    doc.href=url;
+    var url=doc.href; //'/cat';
+    if (!url) {
+        url='/cat';
+        doc.href=url;
+    }
     var catMetadataListHTML = (
         <ul>
 
@@ -225,7 +227,7 @@ parseCatalogue = (doc) => {
                     address: doc.address,
                     id:'add_catalogue_item',
                     node_href:'https://iotblock.io/cat/StandardIndustrialClassification/BarCodes',
-                    href: 'https://iotblock.io/cat/StandardIndustrialClassification/BarCodes/' + this.state.search,
+                    href: 'https://iotblock.io/cat/StandardIndustrialClassification/BarCodes/' + this.state.search ? this.state.search : '',
                     items:[],          
                     "catalogue-metadata": [
                         {
@@ -253,7 +255,7 @@ parseCatalogue = (doc) => {
                 }}
                 mode={'add'} 
                 browse={() => {
-                    window.location='/iotpedia/editor?url=https://iotblock.io/cat/StandardIndustrialClassification/BarCodes/' + this.state.search
+                    window.location='/iotpedia/editor?url=https://iotblock.io/cat/StandardIndustrialClassification/BarCodes/' + this.state.search ? this.state.search : ''
                 }} />
             <br/>
             <b>
@@ -270,17 +272,18 @@ parseCatalogue = (doc) => {
             <li> {self.state.isCatalogue && !self.state.isSearch ? "Catalogue Index (UK SIC):" : "Search Result:"} 
                 <br/><br/> 
             </li>
-            {itemListHTML}
+            {itemListHTML ? itemListHTML : null}
         </ul>
         );
     
-        self.populateUrls(urls);
-        // $('#browser').html(listHTML);
-        this.setState({
-            catalogue_html:listHTML,
-            catalogue_meta_data:doc,
-            map_json,
-            catalogue_item_meta_data:doc['item-metadata']});
+    self.populateUrls(urls);
+    // $('#browser').html(listHTML);
+    self.setState({
+        catalogue_html:listHTML,
+        catalogue_meta_data:doc,
+        map_json,
+        catalogue_item_meta_data:doc['item-metadata'],
+        loading:false});
             
     //} catch(e) {
     //    log(e);
@@ -294,7 +297,7 @@ initCatalogue = () => {
     var history=[];
         
     //alert(url);
-    var fetch_location=this.state.catalogue;
+    var fetch_location='/cat/getBalance?href=' + this.state.catalogue;
                     
     var param= getParameterByName("url");
     var q = getParameterByName("q");
@@ -319,8 +322,9 @@ initCatalogue = () => {
             //contentType: "application/json; charset=utf-8",
             dataType: 'json',
             success: function(doc, textStatus, xhr) {
+                    console.log(doc);
                     //var history=self.state.history;
-                    self.setState({loading:false, isCatalogue:true, isSearch:false});
+                    self.setState({ isCatalogue:true, isSearch:false});
                     //history.push(url);
                     //self.setState({history});
                     //$('#browse_url').val(url);
