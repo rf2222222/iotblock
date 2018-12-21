@@ -19,7 +19,7 @@ contract Catalogue is NodeMetaData {
   }
   
   function selectItems() 
-  constant
+  view
   public
   returns (address[]) 
   {
@@ -35,5 +35,7 @@ contract Catalogue is NodeMetaData {
       href=_href;
       return true;      
   }
+
+  
 
 }

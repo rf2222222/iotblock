@@ -7,6 +7,7 @@ import MetaData from "./MetaDataDAO";
 import Catalogue from "./CatalogueDAO";
 import * as web3Utils from "../../util/web3/web3Utils";
 import Key from "../Key/Key"
+var QRCode = require('qrcode.react');
 var $ = require ('jquery');
 
 const getParameterByName = (name, url) => {
@@ -177,17 +178,13 @@ parseCatalogue = (doc) => {
         doc.href=url;
     }
     var catMetadataListHTML = (
-        <ul>
-
             <Catalogue  
                 key={doc.id} 
                 catalogueType={'catalogue-metadata'} 
                 idata={doc} 
-                mode={'browse'} 
+                mode={'view'} 
                 browse={self.browse} 
             />
-        
-        </ul>    
     );
         
     
@@ -195,33 +192,31 @@ parseCatalogue = (doc) => {
     var urls=[url];
     count=0;
     var i=0;
-    var itemListHTML = (
-        <ul>
-        
-            {doc.items.map(item => {
+    var itemListHTML = doc.items.map(item => {
                 urls.push(item.href);
                 item.id='item_' + i;
                 item.node_href=url;
                 i+=1;
                 return <Catalogue 
-                        key={item.id}
+                        key={Math.random()}
                         catalogueType={'item-metadata'}
                         idata={item}
-                        mode={'browse'}
+                        mode={'view'}
                         browse={self.browse}
                         />
+                        
 
-            })}
+            })
            
-        </ul>
-    );
     if (doc.items.length < 1) {
+        
         itemListHTML=<div>
             <center>
             <Catalogue 
                 catalogueType={'catalogue-metadata'}
                 showAddItem={true}
                 showButton={true}
+                showDeviceUI={true}
                 itemName={this.state.search ? this.state.search : ''}
                 idata={{
                     address: doc.address,
@@ -230,26 +225,7 @@ parseCatalogue = (doc) => {
                     href: 'https://iotblock.io/cat/StandardIndustrialClassification/BarCodes/' + this.state.search ? this.state.search : '',
                     items:[],          
                     "catalogue-metadata": [
-                        {
-                            "rel": "urn:X-hypercat:rels:isContentType",
-                            "val": "application/vnd.hypercat.catalogue+json"
-                        },
-                        {
-                            "rel": "urn:X-hypercat:rels:hasDescription:en",
-                            "val": ""
-                        },
-                        {
-                            "rel": "http://www.w3.org/2003/01/geo/wgs84_pos#lat",
-                            "val": "78.47609815628121"
-                        },
-                        {
-                            "rel": "http://www.w3.org/2003/01/geo/wgs84_pos#long",
-                            "val": "-39.99203727636359"
-                        },
-                        {
-                            "rel": "urn:X-hypercat:rels:Media:1",
-                            "val": ""
-                        }
+                        
                     ]
                     
                 }}
@@ -259,21 +235,79 @@ parseCatalogue = (doc) => {
                 }} />
             <br/>
             <b>
-                        <font color={"orange"}>{self.props.eth_contrib} ETH / Transaction</font>
+                        <font color={"orange"}>*Earn IOTBLOCK Token for Item Data Contribution</font>
                         </b>
 
                
             </center>
         </div>
+        if (this.auth) {
+            this.props.showDialog(true, 
+                <div><center><h3>We recognize your device</h3></center><br/>
+
+                <center>
+                <QRCode value={this.state.search} /><br/>
+                <h3>{this.state.search}</h3>
+                <br/>
+
+                </center>
+                {itemListHTML}
+                </div>);
+            self.setState({
+                //catalogue_html:listHTML,
+                //catalogue_meta_data:doc,
+                //map_json,
+                //catalogue_item_meta_data:doc['item-metadata'],
+                loading:false});
+            
+        }
+    } else {
+        if (this.auth) {
+            this.props.showDialog(true, 
+                <div style={{ height: window.innerHeight * 0.9,
+                    overflowY: "auto" }}>
+                <div><center><h3>We recognize your device</h3></center><br/>
+                <center>
+                <QRCode value={this.state.search} /><br/>
+                <h3>{this.state.search}</h3>
+                <br/>
+
+                </center>
+                <div style={{
+                        display: "flex",
+                        flexFlow: "row wrap",
+                        alignItems: "stretch",
+                        justifyContent: "space-around"
+                    }}>
+                {itemListHTML}
+                </div>
+                </div>
+                </div>);
+            self.setState({
+                //catalogue_html:listHTML,
+                //catalogue_meta_data:doc,
+                //map_json,
+                //catalogue_item_meta_data:doc['item-metadata'],
+                loading:false});
+        }       
     }
         
     var listHTML = (
-        <ul>
-            <li> {self.state.isCatalogue && !self.state.isSearch ? "Catalogue Index (UK SIC):" : "Search Result:"} 
+        <div>
+
+        <b> {self.state.isCatalogue && !self.state.isSearch ? "Catalogue Index (UK SIC):" : "Search Result:"} 
+        </b>
                 <br/><br/> 
-            </li>
+                <div style={{
+                        display: "flex",
+                        flexFlow: "row wrap",
+                        alignItems: "stretch",
+                        justifyContent: "space-around"
+                    }}>
+
             {itemListHTML ? itemListHTML : null}
-        </ul>
+                </div>
+        </div>
         );
     
     self.populateUrls(urls);
@@ -301,6 +335,8 @@ initCatalogue = () => {
                     
     var param= getParameterByName("url");
     var q = getParameterByName("q");
+    this.auth=getParameterByName("auth");
+    this.auth_q=q;
     if (param) {
         fetch_location=param;
     }
@@ -375,16 +411,26 @@ initCatalogue = () => {
 search = (q) => {
     var self=this;
     var search='';
-    if (self.state.search)
-        search=self.state.search;
     if (q) 
         search=q;
+    else if (self.state.search)
+        search=self.state.search;
+
     if (!search)
         return;
     var history=[];
         
     //alert(url);
     var fetch_location='/cat/?q=' + search;
+
+    if (this.auth) {
+        this.props.showDialog(true, 
+        <div><center>Identifying Item ID {search} ... </center></div>);
+    } else {
+        this.props.showDialog(true, 
+            <div><center>Searching Catalogue for {search} ... </center></div>);
+    
+    }
 
     this.setState({loading:true})
     $.ajax({
@@ -398,9 +444,10 @@ search = (q) => {
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             success: function(doc, textStatus, xhr) {
+                    self.props.closeDialog();
                     //var history=self.state.history;
                     //history.push(url);
-                    self.setState({loading:false, isCatalogue:false, isSearch:true});
+                    self.setState({loading:false, search:search, isCatalogue:false, isSearch:true});
                     //$('#browse_url').val(url);
                     self.parseCatalogue(doc);
                     //self.get_smart_key_info(url);
@@ -480,7 +527,8 @@ render() {
                                 <div style={{width:"100%"}}>
                                     <div className={"col-md-12 col-sm-12 col-xs-12"}>
                                         <span className={"middle"}>
-                                        <center><img src={"images/wait.gif"} style={{width:"100%"}} /></center>
+                                        <center>
+                                            <img src={"images/wait.gif"} style={{width:"100%"}} /></center>
                                         </span>
                                     </div>
                                 </div>
@@ -535,6 +583,8 @@ render() {
 
                         </div>
                     </div>
+                   
+                            
                 </div>   
             );
         }

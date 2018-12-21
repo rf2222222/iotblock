@@ -19,7 +19,7 @@ import gevent
 from gevent.queue import Queue
 import threading, logging, time
 import multiprocessing
-from kafka import KafkaConsumer, KafkaProducer
+#from kafka import KafkaConsumer, KafkaProducer
 
 rootNode="https://iotblock.io/"
 def getContract(item, network, address=None, prefix=""):
@@ -219,7 +219,7 @@ def userEthTransfer(amount, beneficiary, sender, key=None,auth=None):
     
         #print("isOwner", key.call({ 'from': address }).isOwner(smartKey.address))
         if not auth is None and key.call({'from':address}).isOwner(web3.toChecksumAddress(auth['auth'])):   
-            print('transferEth',smartKey.transact({ 'from': address }).transferEth(amount, sender, beneficiary));
+            print('transferEth',smartKey.transact({ 'from': address }).transferFromKey(amount, sender, beneficiary, True));
        
         return key
     except Exception as e:
@@ -620,7 +620,7 @@ def nodeEthTransfer(amount, beneficiary, href, auth):
     
     isOwner=False
     if graphRoot.call({'from':address}).isOwner(auth['auth']):        
-        print('transferEth',graphRoot.transact({ 'from': address }).transferEth(amount, beneficiary));
+        print('transferEth',graphRoot.transact({ 'from': address }).transferFromKey(amount, beneficiary, True));
         isOwner=True
         
     key=getContract('Key',network, graphRoot.address, prefix="pki_")
@@ -676,7 +676,7 @@ def setHealth(health, href, eth_contrib):
 
     try:     
 
-        print('transferEth',wait_tx(graphRoot.transact({ 'from': address,  'value':int(contrib) }).setHealth(health)))
+        print('setHealth',wait_tx(graphRoot.transact({ 'from': address,  'value':int(contrib) }).setHealth(health)))
         print ('upsertMetaData',graphRoot.transact({ 'from': address, 'value':int(contrib/2) }).upsertMetaData("urn:X-hypercat:rels:health", str(health)))
         print ('upsertMetaData',graphRoot.transact({ 'from': address, 'value':int(contrib/2) }).upsertMetaData("urn:X-hypercat:rels:healthStatus", healthStates[health]))
     except Exception as e:
@@ -700,6 +700,8 @@ def metaSearch(request, data):
                 for item in items:
                     try:
                         found=False
+                        if ('address' in item and re.search(q, item['address'])):
+                            found=True
                         if (item['href'] and re.search(q, item['href'])):
                             found=True
                         metas=item['item-metadata']
@@ -1246,7 +1248,7 @@ def subscribe():
             evt=evt.replace('\u0000','')
                 
             yield "id: %s\nevent: %s\ndata: %s\n\n" % (event["blockHash"], url, evt)
-            
+    '''      
     def consumeKafka():
             consumer = KafkaConsumer(bootstrap_servers='localhost:9092',
                              auto_offset_reset='earliest',
@@ -1268,8 +1270,8 @@ def subscribe():
                     yield "id: %s\nevent: %s\ndata: %s\n\n" % (message.offset,url, message.value)
                     
             consumer.close()
-
-    return Response(consumeKafka(), mimetype="text/event-stream")
+    '''
+    return Response(consumeEthereumEvents(), mimetype="text/event-stream")
 
 
 @app.route('/', defaults={'path': ''},  methods = ['GET', 'POST', 'DELETE'])

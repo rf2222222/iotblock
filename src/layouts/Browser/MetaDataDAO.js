@@ -41,6 +41,12 @@ const stateToProps = state => {
   
 const dispatchToProps = dispatch => {
     return {
+        showDialog2: (show, content) => {
+            dispatch(actions.showDialog2(show, content));
+        },
+        closeDialog2: () => {
+            dispatch(actions.closeDialog2());
+        },  
         showDialog: (show, content) => {
             dispatch(actions.showDialog(show, content));
         },
@@ -72,6 +78,8 @@ class MetaData extends Component {
    static propTypes = {
         showDialog:PropTypes.func.isRequired,
         closeDialog:PropTypes.func.isRequired,
+        showDialog2:PropTypes.func.isRequired,
+        closeDialog2:PropTypes.func.isRequired,
         api_auth: PropTypes.string.isRequired,
         api_key: PropTypes.string.isRequired,
         eth_contrib: PropTypes.number.isRequired,
@@ -211,6 +219,7 @@ class MetaData extends Component {
                   <ContractFormDAO
                         contract={mdata.address} 
                         metaEdit={true} 
+                        item={this.props.item}
                         mdata={mdata}
                         />       
                     
@@ -221,6 +230,7 @@ class MetaData extends Component {
                 <ContractFormDAO
                         contract={mdata.address} 
                         metaView={true} 
+                        item={this.props.item}
                         mdata={mdata}
                         />  
             )
@@ -230,7 +240,21 @@ class MetaData extends Component {
                 <ContractFormDAO
                         contract={this.props.item.address} 
                         metaAdd={true} 
+                        item={this.props.item}
                         mdata={mdata}
+                        procMetaAdd2={() => {
+                            this.props.showDialog2(true, 
+                                <ContractFormDAO
+                                contract={self.props.item.address} 
+                                metaAdd2={true} 
+                                mdata={mdata}
+                                item={self.props.item}
+                                refreshCatalogue={() => {
+                                    this.props.refreshCatalogue();
+                                }}
+                              /> )
+
+                        }}
                         refreshCatalogue={() => {
                             this.props.refreshCatalogue();
                         }}
@@ -285,13 +309,13 @@ class MetaData extends Component {
                         <br/>
                         {self.state.dataLoading ? (
                             <b>Processing Contribution... <br/></b>
-                        ) : 
-                        mdata.bal ? (
-                        <b>Donation Received: {parseFloat(mdata.bal)/eth1_amount} ETH 
-                        <br/>
-                        </b> 
-                        ) : null }
-                        <br/>
+                        ) : <span><b>Donation Received: <ContractDAO contract={"SmartKey"} 
+                        method="getBalance" 
+                        methodArgs={[mdata.address]} 
+                        isLocaleString={true} /> &nbsp;
+              IOTBLOCK </b></span>
+
+                         }
                 </li>
             )
         } 

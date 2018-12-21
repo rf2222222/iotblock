@@ -107,7 +107,7 @@ contract Crowdsale is Administered {
     
     Key key=token.getSmartKey(beneficiary);
     
-    token.loadSmartKey.value(msg.value)(key, address(token), "CrowdSale");
+    token.loadSmartKey.value(msg.value)(key, address(beneficiary), "CrowdSale");
         
     SmartKeyPurchase(msg.sender, beneficiary, weiAmount, tokens);
     
@@ -132,7 +132,7 @@ contract Crowdsale is Administered {
   // @return true if crowdsale event has ended
   function hasEnded() 
   public 
-  constant 
+  view 
   returns (bool) {
     return now > endTime;
   }

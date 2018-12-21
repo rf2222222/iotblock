@@ -120,6 +120,7 @@ page2_api = (auth, auth_info, key_address)  => {
     var self=this;
    //$('#page2').show();
     this.setState({
+        loading:false,
         keyAddress:key_address
     });
 
@@ -352,7 +353,8 @@ createApiKey = () => {
                              <div className={"row"}>
                                 <div className={"col-md-12 col-sm-12 col-xs-12"}>
                                     <span className={"middle"}>
-                                    <center><img src={"images/wait.gif"} style={{width:"100%"}} /></center>
+                                    
+                                    <center>Loading Smartkey...<br/><img src={"images/wait.gif"} style={{width:"50%"}} /></center>
                                     </span>
                                 </div>
                             </div>

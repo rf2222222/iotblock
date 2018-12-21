@@ -2,7 +2,8 @@ pragma solidity ^0.4.18; //We have to specify what version of the compiler this 
 
 
 
-import './ERC827/ERC827Token.sol';
+//import './ERC827/ERC827Token.sol';
+import './ERC20/StandardToken.sol';
 import '../admin/Administered.sol';
 
 
@@ -14,7 +15,7 @@ import '../admin/Administered.sol';
  * Based on code by TokenMarketNet: https://github.com/TokenMarketNet/ico/blob/master/contracts/MintableToken.sol
  */
 
-contract MintableToken is ERC827Token, Administered {
+contract MintableToken is StandardToken, Administered {
   event Mint(address indexed to, uint256 amount);
   event MintFinished();
   event MintReopened();
@@ -57,7 +58,7 @@ contract MintableToken is ERC827Token, Administered {
   {
 
     require(_amount > 0);
-    tokenMinted = tokenMinted.add(_amount);
+    tokenMinted = tokenMinted + _amount; //.add(_amount);
 
     balances[_to] = balances[_to].add(_amount);
     Mint(_to, _amount);

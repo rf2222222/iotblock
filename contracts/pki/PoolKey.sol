@@ -42,7 +42,7 @@ contract PoolKey is Key, Whitelisted
     
     function getMembers() 
     public
-    constant 
+    view 
     returns (address[]) 
     {
             return members;
@@ -58,9 +58,11 @@ contract PoolKey is Key, Whitelisted
             contrib_amount=contrib_amount.add(msg.value);
             
             distributeEth(msg.value);
-        } else {
+        } 
+        /*else {
             activateKey(msg.sender); 
         }
+        */
     }
     
     function distributeEth(uint256 weiAmount) 

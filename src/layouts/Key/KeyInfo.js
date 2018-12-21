@@ -38,7 +38,7 @@ class KeyInfo extends Component {
 
     this.state = {
         loading:true,
-        transferAmt:0.1,
+        transferAmt:1,
         keyInfo:props.keyInfo,
         
     };
@@ -264,11 +264,11 @@ get_transfer_user_eth_drizzle = (beneficiary, amount) => {
     var drizzleState=this.context.drizzle.store.getState()
     var smartNode="SmartKey";
         
-    var amount=Math.round(parseFloat(amount)*eth1_amount);
+    var amount=Math.round(parseFloat(amount));
     var sender=self.props.myAddress;
 
-    this.contracts[smartNode].methods.transferEth(amount, sender, beneficiary).send(
-    {from: drizzleState.accounts[0],  gasPrice:23000000000
+    this.contracts[smartNode].methods.transferFromKey(amount, sender, beneficiary, false).send(
+    {from: drizzleState.accounts[0],  gasPrice:1000000000
     })
     .then(function(address)  {
         $('#eth_transfer').show();
@@ -320,10 +320,10 @@ setHealth_drizzle = (health ) => {
     var smartNode=self.state.key_addr;
     //print('setHealth',key.transact({ 'from': address, 'value':int(auth['eth_contrib']) }).setHealth(health))
         
-    var contrib=Math.round(parseFloat(self.props.eth_contrib)*eth1_amount);
+    var contrib=0; //Math.round(parseFloat(self.props.eth_contrib)*eth1_amount);
 
     this.contracts[smartNode].methods.setHealth(health).send(
-    {from: drizzleState.accounts[0], value:contrib, gasPrice:23000000000
+    {from: drizzleState.accounts[0], gasPrice:1000000000
     })
     .then(function(address)  {
         $('#health').show();
@@ -375,7 +375,7 @@ get_keyInfo= (address) => {
     var drizzle=this.context.drizzle;
     
     this.props.addContract(drizzle, cfg, events, web3) 
-    self.setState({key_addr:address, loading:false});
+    self.setState({key_addr:address, loading:false, transferDst:this.props.accounts[0]});
 
 }
 componentDidMount() {
@@ -427,7 +427,7 @@ render() {
                                     <div className={"col-md-12"}>    
                                     <br/>
                                         <center>
-                                        <label className={"title2"} style={{paddingTop:"5px"}}>Smart Key Contract Address (Rinkeby Ethereum Network)</label>
+                                        <label className={"title2"} style={{paddingTop:"5px"}}>We recognize your device</label>
                                         <br/><br/>
                                         <span className={"inputbox4"}><span className={"label5"} style={{ }} id={"poolkey"}>
                                         <center>
@@ -459,7 +459,7 @@ render() {
                                         {/* balance.toLocaleString() */}
                                         <ContractDAO contract={"SmartKey"} 
                                                         method="getBalance" 
-                                                        methodArgs={[self.props.accounts[0]]} 
+                                                        methodArgs={[self.state.key_addr]} 
                                                         isLocaleString={true} />
 
                                         </span>
@@ -467,13 +467,13 @@ render() {
                                     </div>
                                 </div>                 
                                         
+                                {/*
                                 <div className={"row"}>
                                     <div className={"col-xs-6"} style={{ textAlign: "right" }}>
                                         <label className={"label6"}>ETH Balance</label>
                                     </div>
                                     <div className={"col-xs-6"} style={{ textAlign: "left" }}>
                                         <span className={"label7 eth_balance"}>
-                                        {/* eth_recv */}
                                         <AccountDAO contract={self.state.key_addr} 
                                                         getBalance={self.state.key_addr}
                                                         units="ether" precision="6" />
@@ -489,7 +489,6 @@ render() {
                                     </div>
                                     <div className={"col-xs-6"} style={{ textAlign: "left" }}>
                                         <span className={"label7 eth_received"}>
-                                        {/* eth_recv */}
                                         <ContractDAO contract={self.state.key_addr} 
                                                         method="contrib_amount" 
                                                         methodArgs={[]} 
@@ -499,7 +498,7 @@ render() {
                                         <font size={2}> ETH</font>
                                     </div>
                                 </div>
-
+                                */}
                                 
                                 <div className={"row"}>
                                     <div className={"col-xs-6"} style={{ textAlign: "right" }}>    
@@ -557,7 +556,7 @@ render() {
                                 <div className={"row"}>
                                     <div className={"col-md-12"}>
                                         <center>
-                                        <label className={"title2"}>Transfer ETH</label>                            
+                                        <label className={"title2"}>Transfer IOTBLOCK Tokens</label>                            
                                         </center>
                                         <br/>
                                     </div>
@@ -565,12 +564,13 @@ render() {
                                 <div id={"eth_transfer"} style={{width:"100%"}}> 
                                     <div className={"row"}>
                                         <div className={"col-xs-6"} style={{ textAlign: "right" }}>
-                                            <label className={"label6"}>ETH Amount:</label>
+                                            <label className={"label6"}>IOTBLOCK Amount:</label>
                                         </div>
                                         <div className={"col-xs-6"} style={{ textAlign: "left" }}>                                                
                                             <input id={"send_amt"} className={"form-control m-input m-input--air m-input--pill"} 
                                             onChange={(val) => {
-                                                this.setState({transferAmt:$('#send_amt').val()});
+                                                //alert(val.target.value);
+                                                this.setState({transferAmt:val.target.value});
                                             }} 
                                             value={this.state.transferAmt} />
                                             <br/>
@@ -583,7 +583,13 @@ render() {
                                         <div className={"col-xs-6"} style={{ textAlign: "left" }}>                                                
                                         
                                             <input id={"beneficiary"} className={"form-control address_val m-input m-input--air m-input--pill"} 
-                                            placeholder={"Beneficiary Address"} defaultValue={userAddress} />
+                                            placeholder={"Beneficiary Address"}
+                                            onChange={(val) => {
+                                                //alert(val.target.value);
+                                                this.setState({transferDst:val.target.value});
+                                            }} 
+                                            //defaultValue={userAddress}
+                                            value={this.state.transferDst} />
                                             <br/>
                                         </div>
                                     </div>
@@ -591,10 +597,11 @@ render() {
                                         <div className={"col-xs-12"}>
                                             <button 
                                                 onClick={() => {
-                                                    self.get_transfer_user_eth_drizzle($('#beneficiary').val(), $('#send_amt').val());
+                                                    self.get_transfer_user_eth_drizzle(this.state.transferDst, 
+                                                        this.state.transferAmt);
                                                  }} 
                                                  className={"form-control  button3  btn btn-primary"} 
-                                                 id={"wd_ether"}><span className={"buttonText"}>Withdraw Ether</span>
+                                                 id={"wd_ether"}><span className={"buttonText"}>Transfer IOTBLOCK Tokens</span>
                                             </button>
                                         </div>
                                     </div>
@@ -621,6 +628,7 @@ render() {
                                         <br/>
                                     </div>
                                 </div>
+                                {/*
                                 <div className={"row"}>
                                     <div className={"col-xs-6"} style={{ textAlign: "right" }}>    
                                                         <label className={"label6"}>ETH Donation per Transaction:</label>
@@ -647,6 +655,7 @@ render() {
                                                 </div>
                                     </div>
                                 </div>
+                                */}
                                 <div className={"row"}>
                                     <div className="col-xs-12">
                                                             <div className={"input-group-"}>
@@ -708,6 +717,7 @@ render() {
                     
                                 <div className={"row"}>
                                     <div className={"col-md-12"}>
+                                                    {/*
                                                     <center>
                                                         <label className={"title2"}>
                                                         Transactions
@@ -722,7 +732,6 @@ render() {
                                                         padding:"20px",
                                                     }}
                                                     >
-                                                    {/*
                                                     {this.state.transactions ? 
                                                     self.state.transactions.map(item => {
                                                         var account=item["account"];
@@ -735,8 +744,9 @@ render() {
                                                     {self.state.transactionCount && self.state.transactionCount > self.state.transactions.length ?
                                                         self.fill_page2_transactions_load_more()
                                                         : null }
-                                                    */}
                                                     </div>
+                                                    */}
+                                                    {/*
                                                     <ContractDAO contract={self.state.key_addr} 
                                                     method="getTransactionCount"
                                                     methodArgs={[self.state.key_addr]}
@@ -778,15 +788,17 @@ render() {
                                                     }
                                                 }
                                                     />
+                                            */}
                                                 <center>
                                                         <label className={"title2"}>
                                                         Key Events
                                                         </label>
                                                     </center> 
                                                     <hr/>
-                                                    <ContractDAO contract={self.state.key_addr} 
-                                                    method="getTransactionCount"
+                                                    <ContractDAO contract={"SmartKey"} 
+                                                    method="getEventCount"
                                                     methodArgs={[self.state.key_addr]}
+                                                    //method="decimals"
                                                     value_post_process={(val)=> {
                                                         var items=[];
                                                         for (var i=val -1; i>= 0; i--) {
@@ -794,9 +806,15 @@ render() {
                                                             items.push(<ContractDAO key={idx} contract={"SmartKey"} 
                                                             method="events" 
                                                             methodArgs={[self.state.key_addr, idx]}
-                                                            object_values={['date','account','transaction_type','amount', 'transaction_name','health_status']} 
-                                                            object_labels={['Date','Address','Type','Amount','Event','Health']} 
-                                                            object_classes={['col-md-2','col-md-4','col-md-1','col-md-1','col-md-2','col-md-2']}
+                                                            object_values={['date','account',/*'transaction_type',*/
+                                                                            'amount', 'transaction_name',
+                                                                            'health_status', 'user_health_status']} 
+                                                            object_labels={['Date','Counterparty Address',/*'Type',*/
+                                                                            'Tokens Earned','Event',
+                                                                            'Transaction Health', 'Counterparty Health']} 
+                                                            object_classes={['col-md-1 mini','col-md-5 mini',
+                                                                             'col-md-1 mini','col-md-2 mini',
+                                                                             'col-md-2 mini','col-md-1 mini']}
                                                             object_values_post_process={[
                                                                 (date) => {
                                                                     var dateTime = new Date(parseInt(date) * 1000);
@@ -806,23 +824,28 @@ render() {
                                                                 (address) => {
                                                                     return address
                                                                 },
-                                                                (tx_type) => {
+                                                                /*(tx_type) => {
                                                                     var tx='Incoming';
                                                                     if (tx_type > 0) {
                                                                         tx='Outgoing';
                                                                     }
                                                                     return tx;
                                                                 },
+                                                                */
                                                                 (amount) => {
 
-                                                                    var eth1=1000000000000000000;
-                                                                    return (amount / eth1) + " ETH"
+                                                                    //var eth1=1000000000000000000;
+                                                                    //return (amount / eth1) + " ETH"
+                                                                    return parseFloat(amount).toLocaleString() + " IOTBLOCK"
                                                                 },
                                                                 (transaction_name) => {
                                                                     return web3Utils.get_web3().utils.hexToAscii(transaction_name)
                                                                 },
                                                                 (health_status) => {
                                                                     return web3Utils.get_web3().utils.hexToAscii(health_status)
+                                                                },
+                                                                (user_health_status) => {
+                                                                    return web3Utils.get_web3().utils.hexToAscii(user_health_status)
                                                                 }]} 
                                                                 object_add_hr={true}
                                                             />);

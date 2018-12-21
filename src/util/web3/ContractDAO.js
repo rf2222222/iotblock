@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
  * Create component.
  */
 var healthStates = ['Provisioning', 'Certified', 'Modified', 'Compromised', 'Malfunctioning', 'Harmful', 'Counterfeit' ]
-var states=[ 'Issued', 'Active', 'Returned' ]
+var states=[ 'Issued', 'Active', 'Alert' ]
 
 class ContractDAO extends Component {
 
@@ -144,6 +144,10 @@ class ContractDAO extends Component {
     if (this.props.value_post_process) {
         displayData=this.props.value_post_process(displayData)
         return displayData;
+    }
+    if (this.props.value_methodArgs_post_process) {
+      displayData=this.props.value_methodArgs_post_process(displayData, this.props.methodArgs, this.props.methodArgsAdd)
+      return displayData;
     }
     if (this.props.morris) {
         if(!(this.dataKey2 in this.props.contracts[this.props.contract][this.props.method2])) {

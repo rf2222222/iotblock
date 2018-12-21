@@ -71,7 +71,7 @@ createSmartKey = () => {
                     self.contracts[smartNode].methods.loadSmartKey(
                         keyAddress, beneficiary, web3Utils.get_web3().utils.fromAscii("Deposit"), 
                                 ).send(
-                    {from: web3Utils.get_address(), value:eth1_amount, gasPrice:23000000000})
+                    {from: web3Utils.get_address(), gasPrice:5000000000})
                     .then(function(keyAddress)  {
                         self.contracts[smartNode].methods.getSmartKey(beneficiary).call(
                             {from: web3Utils.get_address()}).then(function (keyAddress) {
@@ -80,7 +80,10 @@ createSmartKey = () => {
                                     self.props.closeDialog();
                                     self.props.callback( web3Utils.get_address());
                                     
+                            }).catch(function (error) {
+                                alert(error);
                             });
+                    
                     }).catch(function(error) {
                         if (error.toString().match("32601") || error.toString().match("Method not found")) {
                             self.contracts[smartNode].methods.getSmartKey(beneficiary).call(
@@ -90,17 +93,22 @@ createSmartKey = () => {
                                         self.props.closeDialog();
                                         self.props.callback( web3Utils.get_address());
                                         
+                                }).catch(function (error) {
+                                    alert(error);
                                 });
+                        
                       
                         } else {
                             self.setState({loading:false})
                                 
                             alert("Could not complete transaction")
-                            alert(error);
+                            alert(error.message);
                             console.log(error);
                         }
                     });
             }
+        }).catch(function (error) {
+            alert(error);
         });
 
         
@@ -109,12 +117,14 @@ createSmartKey = () => {
 
 render() {
     var self=this;
-    if (this.state.loading) {
+    var smartNode="SmartKey";
+    if (this.state.loading || !self.contracts || !self.contracts[smartNode] || !self.contracts[smartNode].methods) {
       return <div>
                   <div className={"row"}>
                     <div className={"col-md-12 col-sm-12 col-xs-12"}>
                         <span className={"middle"}>
-                        <center><img src={"images/wait.gif"} style={{width:"100%"}} /></center>
+                        <center>Loading SmartKey...<br/>
+                        <img src={"images/wait.gif"} style={{width:"50%"}} /></center>
                         </span>
                     </div>
                 </div>
@@ -128,8 +138,10 @@ render() {
                             <center>
                                 <div className={"row"}>
                                     <div className={"col-xs-12"}>
-                                            <br/><br/>
-                                            <center><label className={"title1"}>Create Smart Key<br/>(Rinkeby Ethereum Network)</label></center>
+                                            <center><label className={"title1"}>
+                                          {/* Create Smart Key<br/>(Rinkeby Ethereum Network) */}
+                                          <img src="images/logo.svg" />
+                                            </label></center>
                                             <br/>
                                             
                                             
@@ -142,13 +154,15 @@ render() {
                                             
                                             <div className={"col-xs-12"}>
                                                 <center>
-                                                        <label className={"label2"}>Your wallet address:</label>
+                                                        <label className={"label2"}><h3>Add New Device</h3></label>
                                                 </center>
                                             </div>
                                         </div>
                                         <div className={"row"}>
                                             <div className={"col-xs-12"}>
-                                                        <input name="address" className={"address_val inputbox3 form-control m-input m-input--air"}  
+                                                <center>      
+                                                    
+                                                    <input name="address" className={"address_val inputbox3 form-control m-input m-input--air"}  
                                                         style={{width:"100%"}} 
                                                         type={"text"} 
                                                         id={"address"} 
@@ -157,18 +171,14 @@ render() {
                                                         onChange={() => {
                                                         }}
                                                      />
+                                                     </center>
+
                                             </div>
                                         </div>
                     
                                     </div>
                                 </div>
                                             
-                                <div className={"row"}>
-                                    <div className={"col-xs-12"} style={{textAlign:'center'}}>    
-                                        <br/>
-                                            <label className={"label3"}>1 ETH is the minimum ETH needed to create Smart Key.</label>
-                                    </div>
-                                </div>
                                 <br/>
                                 
                         
@@ -183,9 +193,8 @@ render() {
                                         }
                                         className={"button3 btn btn-accent"}>
                                             <span 
-                                                className={"buttonText"}>Create Smart Key</span></button>
-                                             <br/><br/>
-                                             <a href='/' className={"link2"}>Go back to home</a>
+                                                className={"buttonText"}>Sign In</span></button>
+                                            
                                     
                                     </div>
                                 </div>

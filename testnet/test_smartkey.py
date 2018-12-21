@@ -67,7 +67,7 @@ amount=1000000000000000000 #1 ETH
 
 print ('getBalance (eth) for address1',web3.eth.getBalance(address))
 print ('getBalance (eth) for address2',web3.eth.getBalance(address2))
-print (io.transact({ 'from': address2, 'value': amount}).loadSmartKey(address2))
+#print (io.transact({ 'from': address2, 'value': amount}).loadSmartKey(address2))
 print ('convertToToken', gc.call({ 'from': address2}).convertToToken(amount))
 print ('getBalance', gc.call({ 'from': address2}).getBalance(address2))
 print ('getSmartKey', gc.call({ 'from': address2 }).getSmartKey(address2))
@@ -88,7 +88,7 @@ eth_contrib=int(eth1/100000);
 addAuthKey(kc, address2)
 getApiKey(kc, address2, eth_contrib)
 
-web3.eth.sendTransaction({ 'from' :address2, 'to':web3.toChecksumAddress(address3), 'value': eth1 * 3});
+web3.eth.sendTransaction({ 'from' :address2, 'to':web3.toChecksumAddress(address3), 'value': eth_contrib});
     
 '''
 

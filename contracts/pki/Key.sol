@@ -8,7 +8,7 @@ contract Key is Ownable {
    
    using SafeMath for uint256;
     
-   enum State { Issued, Active, Returned }
+   enum State { Issued, Active, Alert }
    //event KeyStateUpdate(address indexed beneficiary, address indexed vault, State status);
     
    enum Health { Provisioning, Certified, Modified, Compromised, Malfunctioning, Harmful, Counterfeit }
@@ -61,20 +61,30 @@ contract Key is Ownable {
         beneficiary.transfer(amount);
         transactions[address(this)].push(transaction(beneficiary,now,amount, 1));
    }
+
+   function transfer(uint amount, address beneficiary) 
+   public
+   onlyOwner 
+   {
+        require(state == State.Active);
+        smartKey.transfer(beneficiary, amount);
+        transactions[address(this)].push(transaction(beneficiary,now,amount, 1));
+   }
    
    function setHealth(Health _health) 
    public
    payable
    {
    
-        if (msg.value > 10000000000000) {
             health = _health;
             
             if (uint256(_health) > 1) {
-                smartKey.loadSmartKey.value(msg.value)(this, address(this), bytes32('HealthWarning'));
+                smartKey.loadSmartKey.value(msg.value)(this, msg.sender, bytes32('HealthWarning'));
+                state=State.Alert;
                 
             } else {
-                smartKey.loadSmartKey.value(msg.value)(this, address(this), bytes32('HealthUpdate'));
+                smartKey.loadSmartKey.value(msg.value)(this, msg.sender, bytes32('HealthUpdate'));
+                state=State.Active;
                 
             }
             HealthUpdate(_health);
@@ -85,7 +95,6 @@ contract Key is Ownable {
             //if (vault != address(this) && vault != address(msg.sender)) {
             //    vault.transfer(msg.value);
             //}
-        }
    
    }
    
@@ -130,10 +139,11 @@ contract Key is Ownable {
         state = State.Active;
         //activated[msg.sender] = activated[msg.sender].add(msg.value);     
         contrib_amount=contrib_amount.add(msg.value);    
-        transactions[user].push(transaction(msg.sender,now,msg.value, 0));
+        //transactions[user].push(transaction(msg.sender,now,msg.value, 0));
    }
 
     
+   /*
    function returnKey() 
    public
    onlyOwner 
@@ -142,6 +152,8 @@ contract Key is Ownable {
         state = State.Returned;
    }
    
+   */
+
    function getHash(string key) 
    pure
    public
@@ -165,7 +177,7 @@ contract Key is Ownable {
 
    function getValueByHash(bytes32 hash) 
    onlyOwner
-   constant    
+   view    
    public
    returns(string) 
    {
@@ -182,12 +194,13 @@ contract Key is Ownable {
 
    function getKeyAuth(string key) 
    onlyOwner
-   constant 
+   view 
    public
    returns(string)
    {
         return getValueByHash(keccak256(key));
    }
+   
    
    function () 
    public
@@ -196,4 +209,5 @@ contract Key is Ownable {
         activateKey(msg.sender);
    }
    
+
 }

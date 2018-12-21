@@ -40,7 +40,7 @@ class NodeKeyInfo extends Component {
 
     this.state = {
         loading:true,
-        transferAmt:0.1,
+        transferAmt:1,
         keyInfo:props.keyInfo,
         
     };
@@ -49,10 +49,11 @@ class NodeKeyInfo extends Component {
 
     
 showHealthDialog = () => {
+    var self=this;
     this.setState({health_init:true});
     var amt=$('#eth_contrib').val();
     $('.donate_amt').html(amt);
-    this.props.showDialog(true, <KeyHealth account={this.props.myAddress} donate_amt={amt} setHealth={this.setHealth} />);
+    this.props.showDialog(true, <KeyHealth account={this.props.myAddress} donate_amt={amt} setHealth={self.setHealth_drizzle} />);
     
 }
 
@@ -279,6 +280,33 @@ fill_page2_transactions_load_more = ()  => {
 }    
 
 
+get_transfer_node_eth_drizzle = (beneficiary, amount) => {
+    var self=this;
+    $('#eth_transfer').hide();
+    $('#eth_transfer_loading').show();
+    var drizzleState=this.context.drizzle.store.getState()
+    var smartNode="SmartKey";
+        
+    var amount=Math.round(parseFloat(amount));
+    var sender=self.state.key_addr;
+
+    this.contracts[smartNode].methods.transferFromKey(amount, sender, beneficiary, false).send(
+    {from: drizzleState.accounts[0],  gasPrice:1000000000
+    })
+    .then(function(address)  {
+        $('#eth_transfer').show();
+        $('#eth_transfer_loading').hide();
+
+    }).catch(function(error) {
+        self.setState({loading:false})
+            
+        alert("Could not complete transaction")
+        alert(error);
+        console.log(error);
+    });
+
+ }
+
 get_transfer_node_eth = (beneficiary, amount) => {
     var self=this;
     var href=this.state.keyInfo.url;
@@ -310,6 +338,35 @@ get_transfer_node_eth = (beneficiary, amount) => {
          });
  }
  
+
+ setHealth_drizzle = (health ) => {
+    var self=this;
+    self.hideHealthDialog();
+
+    var drizzleState=this.context.drizzle.store.getState()
+    var smartNode=self.state.key_addr;
+    //print('setHealth',key.transact({ 'from': address, 'value':int(auth['eth_contrib']) }).setHealth(health))
+        
+    var contrib=0; //Math.round(parseFloat(self.props.eth_contrib)*eth1_amount);
+
+    this.contracts[smartNode].methods.setHealth(health).send(
+    {from: drizzleState.accounts[0], gasPrice:1000000000
+    })
+    .then(function(address)  {
+        $('#health').show();
+        $('#health_loading').hide();
+        
+    }).catch(function(error) {
+        $('#health').show();
+        $('#health_loading').hide();
+        self.hideHealthDialog();
+            
+        alert("Could not complete transaction")
+        alert(error);
+        console.log(error);
+    });
+}
+
 
 setHealth = (health) => {
     var self=this;
@@ -344,14 +401,13 @@ setHealth = (health) => {
 
  get_keyInfo= (address) => {
     var self=this;
-    var cfg=Object.assign({}, web3Utils.get_key_contract_cfg(address));
+    var cfg=Object.assign({}, web3Utils.get_item_contract_cfg(address));
     var events=[];
     var web3=web3Utils.get_web3();
     var drizzle=this.context.drizzle;
     
     this.props.addContract(drizzle, cfg, events, web3) 
-    self.setState({key_addr:address, loading:false});
-
+    self.setState({key_addr:address, loading:false, transferDst:this.props.accounts[0]});
 }
 
 componentDidMount() {
@@ -366,8 +422,10 @@ componentDidMount() {
 componentWillReceiveProps(newProps) {
     var self=this;
     if (newProps.keyInfo && !(JSON.stringify(newProps.keyInfo) === JSON.stringify(this.props.keyInfo))) {
-        self.get_smartkey_transactions(newProps.keyInfo.url,0,10);
+        //self.get_smartkey_transactions(newProps.keyInfo.url,0,10);
         this.setState({keyInfo:newProps.keyInfo})
+        this.get_keyInfo(newProps.keyInfo.address);
+    
     }
 
 }
@@ -376,7 +434,6 @@ render() {
     var self=this;
     var {address, balance, eth_recv, vault, state, health, tokens, isOwner, states, healthStates}=this.state.keyInfo;
     
-   
     if (this.state.loading) {
         return <div><center>Loading Key...</center></div>
     }
@@ -402,7 +459,7 @@ render() {
                                         <span className={"inputbox4"}>
                                         <span className={"label5"} style={{ }} id={"poolkey"}>
                                         <center>
-                                        <pre style={{ whiteSpace: "pre-wrap",  maxWidth:"50%" }}>{address}</pre>
+                                        <pre style={{ whiteSpace: "pre-wrap",  maxWidth:"50%" }}>{this.state.key_addr}</pre>
                                         </center>
                                         </span></span>
                                         <hr/>
@@ -418,7 +475,25 @@ render() {
                                         <br/>
                                     </div>
                                 </div>
-                                        
+
+                                 <div className={"row"}>
+                                    <div className={"col-xs-6"} style={{ textAlign: "right" }}>
+                                        <label className={"label6"}>IOTBLOCK Balance</label>
+                                    </div>
+                                    <div className={"col-xs-6"} style={{ textAlign: "left" }}>
+                                        <span className={"label7 eth_balance"}>
+                                        {/* balance.toLocaleString() */}
+                                        <ContractDAO contract={"SmartKey"} 
+                                                        method="getBalance" 
+                                                        methodArgs={[address]} 
+                                                        isLocaleString={true} />
+
+                                        </span>
+                                        <font size={2}> IOTBLOCK</font><br/>
+                                    </div>
+                                </div>              
+
+                                {/*
                                 <div className={"row"}>
                                     <div className={"col-xs-6"} style={{ textAlign: "right" }}>
                                         <label className={"label6"}>Balance</label>
@@ -442,7 +517,7 @@ render() {
                                         <font size={2}> ETH</font>
                                     </div>
                                 </div>
-
+                                */}
                                 
                                 <div className={"row"}>
                                     <div className={"col-xs-6"} style={{ textAlign: "right" }}>    
@@ -451,8 +526,14 @@ render() {
                                     <div className={"col-xs-6"} style={{ textAlign: "left" }}>
                                             <label className={"label7"}>
                                                 <span className={"health"}>
-                                                
-                                                {health == 5 ? <b style={{color:'red'}}>{healthStates[health]}</b> : <b>{healthStates[health]}</b>}
+                                                <ContractDAO contract={self.state.key_addr} 
+                                                        method="health" 
+                                                        methodArgs={[]} 
+                                                        isHealth={true} />
+
+                                                {/* 
+                                                health == 5 ? <b style={{color:'red'}}>{healthStates[health]}</b> : <b>{healthStates[health]}</b>
+                                                */}
                                                 </span>
                                             </label>
                                     </div>
@@ -475,7 +556,11 @@ render() {
                                     </div>
                                     <div className={"col-xs-6"} style={{ textAlign: "left" }}>
                                         <label className={"label7 title3"}><span className={"state"}>
-                                        { states[state] }
+                                        <ContractDAO contract={self.state.key_addr} 
+                                                        method="state" 
+                                                        methodArgs={[]} 
+                                                        isState={true} />
+                                        {/* states[state] */}
                                         </span></label> 
                                         <font size={2}></font>
                                     </div>
@@ -488,22 +573,27 @@ render() {
                                     </div>
                                 </div>    
                                 <div className={"row"}>
-                                    <div className={"col-xs-12"}>
+                                    <div className={"col-md-12"}>
                                         <center>
-                                        <label className={"title2"}>Transfer ETH</label>                            
+                                        <label className={"title2"}>Transfer IOTBLOCK Tokens</label>                            
                                         </center>
                                         <br/>
                                     </div>
                                 </div>
-                                <div id={"eth_transfer"} style={{width:"95%"}}> 
+                                <div id={"eth_transfer_loading"} style={{display:"none"}}>
+                                    <center>Transferring {this.state.transferAmt} IOTBLOCK Token to {this.state.transferDst}...<br/>
+                                    <img src="images/wait.gif" width={100} /></center>
+                                </div>
+                                <div id={"eth_transfer"} style={{width:"100%"}}> 
                                     <div className={"row"}>
                                         <div className={"col-xs-6"} style={{ textAlign: "right" }}>
-                                            <label className={"label6"}>ETH Amount:</label>
+                                            <label className={"label6"}>IOTBLOCK Amount:</label>
                                         </div>
                                         <div className={"col-xs-6"} style={{ textAlign: "left" }}>                                                
                                             <input id={"send_amt"} className={"form-control m-input m-input--air m-input--pill"} 
                                             onChange={(val) => {
-                                                this.setState({transferAmt:$('#send_amt').val()});
+                                                //alert(val.target.value);
+                                                this.setState({transferAmt:val.target.value});
                                             }} 
                                             value={this.state.transferAmt} />
                                             <br/>
@@ -516,35 +606,33 @@ render() {
                                         <div className={"col-xs-6"} style={{ textAlign: "left" }}>                                                
                                         
                                             <input id={"beneficiary"} className={"form-control address_val m-input m-input--air m-input--pill"} 
-                                            placeholder={"Beneficiary Address"} defaultValue={self.props.api_auth} />
+                                            placeholder={"Beneficiary Address"}
+                                            onChange={(val) => {
+                                                //alert(val.target.value);
+                                                this.setState({transferDst:val.target.value});
+                                            }} 
+                                            //defaultValue={userAddress}
+                                            value={this.state.transferDst} />
                                             <br/>
                                         </div>
                                     </div>
                                     <div className={"row"}>
                                         <div className={"col-xs-12"}>
-                                            <a href='#eth_transfer' 
+                                            <button 
                                                 onClick={() => {
-                                                    self.get_transfer_node_eth($('#beneficiary').val(), $('#send_amt').val());
+                                                    self.get_transfer_node_eth_drizzle(this.state.transferDst, 
+                                                        this.state.transferAmt);
                                                  }} 
-                                                 className={"button3 form-control  btn btn-primary"} 
-                                                 id={"wd_ether"}><span className={"buttonText"}>Withdraw Ether</span></a>
+                                                 className={"form-control  button3  btn btn-primary"} 
+                                                 id={"wd_ether"}><span className={"buttonText"}>Transfer IOTBLOCK Tokens</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                                 </div>
                                 ) : null }
-                                <div id={"eth_transfer_loading"} style={{display:"none"}}>
-                                    <center><img src="images/wait.gif" width={100} /></center>
-                                </div>
+                               
 
-                                { isOwner ? (
-                                <div className={"row"}>
-                                    <div className={"col-xs-12"}>
-                                        <hr/>
-                                    </div>
-                                </div>    
-
-                                 ) : null}
                                 <div id={"view_api_loading"} style={{display:"none"}}>
                                     <center><img src="images/wait.gif" width={100} /></center>
                                 </div>
@@ -653,24 +741,26 @@ render() {
                                                         </label>
                                                     </center> 
                                                     <hr/>
-                                                    <ContractDAO contract={address} 
-                                                    method="getTransactionCount"
-                                                    methodArgs={[address]}
+                                                    <ContractDAO contract={"SmartKey"} 
+                                                    method="getEventCount"
+                                                    methodArgs={[self.state.key_addr]}
+                                                    //method="decimals"
                                                     value_post_process={(val)=> {
                                                         var items=[];
-                                                        var e=0;
-                                                        if (this.state.eventHistStart) {
-                                                            e=this.state.eventHistStart;
-                                                        }
-                                                        for (var i=0; i<e+10; i++) {
+                                                        for (var i=val -1; i>= 0; i--) {
                                                             var idx=i;
-
                                                             items.push(<ContractDAO key={idx} contract={"SmartKey"} 
                                                             method="events" 
-                                                            methodArgs={[address, idx]}
-                                                            object_values={['date','account','transaction_type','amount', 'transaction_name','health_status']} 
-                                                            object_labels={['Date','Address','Type','Amount','Event','Health']} 
-                                                            object_classes={['col-md-2','col-md-4','col-md-1','col-md-1','col-md-2','col-md-2']}
+                                                            methodArgs={[self.state.key_addr, idx]}
+                                                            object_values={['date','account',/*'transaction_type',*/
+                                                                            'amount', 'transaction_name',
+                                                                            'health_status', 'user_health_status']} 
+                                                            object_labels={['Date','Counterparty Address',/*'Type',*/
+                                                                            'Tokens Earned','Event',
+                                                                            'Transaction Health', 'Counterparty Health']} 
+                                                            object_classes={['col-md-1 mini','col-md-5 mini',
+                                                                             'col-md-1 mini','col-md-2 mini',
+                                                                             'col-md-2 mini','col-md-1 mini']}
                                                             object_values_post_process={[
                                                                 (date) => {
                                                                     var dateTime = new Date(parseInt(date) * 1000);
@@ -680,23 +770,28 @@ render() {
                                                                 (address) => {
                                                                     return address
                                                                 },
-                                                                (tx_type) => {
+                                                                /*(tx_type) => {
                                                                     var tx='Incoming';
                                                                     if (tx_type > 0) {
                                                                         tx='Outgoing';
                                                                     }
                                                                     return tx;
                                                                 },
+                                                                */
                                                                 (amount) => {
 
-                                                                    var eth1=1000000000000000000;
-                                                                    return (amount / eth1) + " ETH"
+                                                                    //var eth1=1000000000000000000;
+                                                                    //return (amount / eth1) + " ETH"
+                                                                    return parseFloat(amount).toLocaleString() + " IOTBLOCK"
                                                                 },
                                                                 (transaction_name) => {
                                                                     return web3Utils.get_web3().utils.hexToAscii(transaction_name)
                                                                 },
                                                                 (health_status) => {
                                                                     return web3Utils.get_web3().utils.hexToAscii(health_status)
+                                                                },
+                                                                (user_health_status) => {
+                                                                    return web3Utils.get_web3().utils.hexToAscii(user_health_status)
                                                                 }]} 
                                                                 object_add_hr={true}
                                                             />);
@@ -705,9 +800,11 @@ render() {
                                                     }
                                                 }
                                                     />
+                                                    {/*
                                                     <div id={"events"} className={'row label8 loadmore'}>
                                                             <div className={'col-xs-12'}>
                                                             <center>
+
                                                                 <a href="#events" className={"button3 form-control btn btn-primary"} 
                                                                 onClick={() => {
                                                                     var e=0;
@@ -723,6 +820,7 @@ render() {
 
                                                             </center><br/><br/></div>
                                                         </div>
+                                                            */}
                                     </div>
                                 </div>
                             </div>

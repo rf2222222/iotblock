@@ -305,3 +305,15 @@ li:hover {
   cursor: pointer;
 }
  
+.mini {
+  font-size: 10.2px;
+}
+
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}

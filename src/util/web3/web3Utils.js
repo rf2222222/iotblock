@@ -13,7 +13,7 @@ import BigNumber from 'bignumber.js';
 import createKeccak from 'keccak';
 import shajs from 'sha.js'
 import {providerUrl, wsUrl} from '../../providerOptions'
-Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send;
+//Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send;
 
  
   
@@ -434,16 +434,24 @@ export const get_keyAuth = (beneficiary, cb) =>
                                   console.log('API Key', res.toString().toLowerCase());
                                   cb(beneficiary, res.toString().toLowerCase(), keyAddress.toLowerCase());
                                   
+                           }).catch(function (err) {
+                            alert(err)
                            });
+                       }).catch(function (err) {
+                        alert(err)
                        });
                       } else {
                                  console.log("API Key not found");
                                  console.log(cb);
                                  cb(beneficiary, '', '');
-                      }
+                      } 
                           
-                  });                
+                  }).catch(function (err) {
+                    alert(err)
+                  });;                
                   
+         }).catch(function (err) {
+             alert(err)
          });
   
           
@@ -669,8 +677,8 @@ export const get_meta_contract_cfg = (meta) => {
 }
 
 export const get_item_contract_cfg = (item) => {
-    console.log(item_artifacts)
-      var jsonInterface=item_artifacts.abi.slice(0);
+    console.log(node_artifacts)
+      var jsonInterface=node_artifacts.abi.slice(0);
       console.log(jsonInterface)
       var item_contract=new window.web3.eth.Contract(jsonInterface, item);
       var contractConfig = {

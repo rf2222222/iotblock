@@ -24,9 +24,11 @@ web3Provider='http://127.0.0.1:' + port
 
 network='4'
 port='8666'
-TEST_PATHFINDER_URL_ROOT = "https://iotblock.io/cat"
+#TEST_PATHFINDER_URL_ROOT = "https://iotblock.io/cat"
+TEST_PATHFINDER_URL_ROOT = "http://127.0.0.1:8888/cat"
 API_KEY=""
-web3Provider='http://35.165.47.77:' + port
+web3Provider='http://127.0.0.1:' + port
+#web3Provider='http://35.165.47.77:' + port
 
 
 def getApiKey(kc, address2, eth_contrib):
@@ -102,8 +104,8 @@ io=getContract('PublicOffering',network)
 eth1=1000000000000000000;
 eth_contrib=int(eth1/100000);
 
-get_smartKey(address, eth1 * 3)
-get_smartKey(address2, eth1 * 3)
+get_smartKey(address, eth_contrib);
+get_smartKey(address2, eth_contrib);
 key=gc.call({ 'from': address2 }).getSmartKey(address2)
 kc=getContract('Key',network, key, prefix="pki_")
 addAuthKey(kc, address2)

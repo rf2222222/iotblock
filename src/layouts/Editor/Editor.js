@@ -7,6 +7,8 @@ import EditorMapInfo from "./EditorMapInfo";
 import MetaData from "../Browser/MetaDataDAO";
 import Catalogue from "../Browser/CatalogueDAO";
 import * as web3Utils from "../../util/web3/web3Utils";
+import * as APIUtils from "../../util/web3/APIUtils";
+
 import Key from "../Key/Key"
 import NodeKey from "../Key/NodeKey"
 import { Link } from "react-router-dom";
@@ -121,7 +123,34 @@ export default class Editor extends Component {
     this._isMounted = false;
   }
 
-  
+proc_browse_data = (listHtml, doc, urls) => {
+    var self=this;
+    var history=self.state.history;
+    history.concat(urls);
+    self.populateUrls(urls);
+
+    // $('#browser').html(listHTML);
+
+    if (this.auth) {
+        this.props.showDialog(true, 
+            <div style={{ height: window.innerHeight * 0.9,
+                overflowY: "auto" }}>{listHtml}</div>
+            )
+    } 
+    self.setState({
+        history,
+        loading:false,
+        catalogue_html:listHtml,
+        catalogue_meta_data:doc,
+        //catalogue_url: orig_url,
+        map_json:{},
+        catalogue_item_meta_data:doc['item-metadata']});
+
+    //self.get_smart_key_info(url);
+
+    console.log('browse complete');
+}
+
 fill_api_info = (auth, auth_info, user_key_address) => {
 
     if (auth_info.length < 1)    {
@@ -140,187 +169,6 @@ fill_api_info = (auth, auth_info, user_key_address) => {
     this.props.authEthContrib(parseFloat($('#eth_contrib').val()));
         
 }
-
-
-
-
-add_auth = (xhr) => {
-        var eth1=1000000000000000000;
-        var eth_contrib=parseFloat($('#eth_contrib').val()) * eth1;
-        var data="Token api_key=\"" + this.state.api_key + "\" auth=\"" + this.state.api_auth + "\" eth_contrib=\"" + eth_contrib + "\"";
-        data=btoa(data);
-        data=btoa(data + ':' + '');
-        xhr.setRequestHeader("Accept","application/vvv.website+json;version=1");
-        xhr.setRequestHeader("Authorization", data); 
-
-}
-
-
-browseCatalogue = () => {
-    var self=this;
-    self.browse(self.state.catalogue_url, function() {
-    });
-}
-
-
-parseCatalogue = (url, doc) => {
-    var self=this;
-    var orig_url;
-    var catalogue_meta_data=[]
-    var map_json={};
-    var catalogue_item_meta_data=[];
-
-    var count=0;
-    //try {
-    // store metadata for catalogue
-    console.log('Received Document')
-    console.log(doc);
-    var eth1_amount=1000000000000000000;
-    doc.id="catalogue";
-    doc.href=url;
-    var catMetadataListHTML = (
-        <ul>
-
-            <Catalogue  key={doc.id} 
-                        catalogueType={'catalogue-metadata'} 
-                        idata={doc} 
-                        mode={'view'} 
-                        browse={self.browse} />
-        
-        </ul>    
-    );
-        
-    
-
-    var urls=[url];
-    count=0;
-    var i=0;
-    var itemListHTML = (
-        <ul>
-        
-            {doc.items.map(item => {
-                urls.push(item.href);
-                item.id='item_' + i;
-                item.node_href=url;
-                i+=1;
-                return <Catalogue 
-                        key={item.id}
-                        catalogueType={'item-metadata'}
-                        idata={item}
-                        mode={'view'}
-                        browse={self.browse}
-                        />
-
-            })}
-            <Catalogue 
-                catalogueType={'item-metadata'}
-                showAddItem={true}
-                idata={{
-                    address: doc.address,
-                    id:'add_catalogue_item',
-                    node_href:url,
-                    href:'',
-                    items:[],            
-                    
-                }}
-                mode={'add'} 
-                browse={self.browse} />
-        </ul>
-    );
-        
-    var listHTML = (
-        <ul><li> Catalogue Metadata
-                <br/><br/> 
-            </li>
-            {catMetadataListHTML}
-            <li id={"showMap"} style={{display:"none"}}></li>
-            <li> Items 
-                <br/><br/> 
-            </li>
-            {itemListHTML}
-        </ul>
-        );
-    
-        self.populateUrls(urls);
-        // $('#browser').html(listHTML);
-        this.setState({
-            catalogue_html:listHTML,
-            catalogue_meta_data:doc,
-            //catalogue_url: orig_url,
-            map_json,
-            catalogue_item_meta_data:doc['item-metadata']});
-            
-    //} catch(e) {
-    //    log(e);
-    //}
-}
-
-browse = (url, cb) => {
-    var self=this;
-    var history=[];
-    this.setState({catalogue_url:url, loading:true});
-                    
-    //alert(url);
-    var fetch_location='/cat/getBalance?href=' + url;
-
-    $.ajax({
-            beforeSend: function(xhr){
-                self.add_auth(xhr);
-                //setHeaders(xhr);
-            
-            },
-            type: 'GET',
-            url: fetch_location,
-            //data: JSON.stringify(user_item),
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            success: function(doc, textStatus, xhr) {
-                    var history=self.state.history;
-                    history.push(url);
-                    self.setState({history, loading:false});
-                    self.parseCatalogue(url, doc);
-                    //self.get_smart_key_info(url);
-
-                    cb(null); // done
-                
-            },
-            error: function(xhr, textStatus, err) {
-                console.log(xhr.status + ' ' + xhr.statusText)
-            }
-        });
-
-}
-
-
-    
-get_smart_key_info = (href) => {
-
-    var self=this;
-    $.ajax({
-            beforeSend: function(xhr){
-                self.add_auth(xhr);
-                //setHeaders(xhr);
-            
-            },
-            type: 'GET',
-            url: '/cat/getNodeSmartKey?href=' + encodeURIComponent(href),
-            //data: JSON.stringify(user_item),
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            success: function(body, textStatus, xhr) {
-                body.href=href;
-                self.setState({keyInfo:body, key_address:body.address});
-                
-                //self.fill_page2(href, body["address"], body["balance"], body["eth_recv"], body["vault"], body["state"], body["health"], body["isOwner"]);
-            },
-            error: function(xhr, textStatus, err) {
-                console.log(xhr.status + ' ' + xhr.statusText);
-            }
-        });
-}
-
-
-
 
 
 
@@ -369,6 +217,7 @@ populateUrls = (urls) => {
            //url="https://iotblock.io" + path
            
            var param= getParameterByName("url");
+           this.auth= getParameterByName("auth");
            if (param) {
                url=param;
                self.setState({catalogue_url:url})
@@ -384,15 +233,8 @@ populateUrls = (urls) => {
            web3Utils.get_keyAuth(address, self.fill_api_info) 
 
             
-           self.browse(url, function() {
-
-                console.log('browse complete');
-                //self.setState({catalogue_url:url});
-                self.populateUrls([url]);
-                
-            
-
-            });
+           this.setState({catalogue_url:url, loading:true});
+           APIUtils.browse({api_key: self.props.api_key, api_auth:self.props.api_auth}, url, this.proc_browse_data);
             
         }
         var eth_salt = web3Utils.getCookie('iotcookie');
@@ -441,10 +283,8 @@ populateUrls = (urls) => {
                                     <td> <select id={"urls"} onChange={(e) => {
                                                 //self.setState({ catalogue_url:e.target.value});
 
-                                                    
-                                                    self.browse(e.target.value, function() {
-                                                        console.log('browse complete');
-                                                    });
+                                                APIUtils.browse({api_key: self.props.api_key, api_auth:self.props.api_auth},
+                                                    e.target.value, this.proc_browse_data);
                                                     
                                             
 
@@ -482,14 +322,15 @@ populateUrls = (urls) => {
                                         //size={80} 
                                         onChange={(e) => {
                                             self.setState({catalogue_url:e.target.value});
-                                        }}
-                                        >{self.state.catalogue_url}</textarea> 
+                                        }} value={self.state.catalogue_url}
+                                        />
                                         
                                         <div className={"input-group-append"}>
                                             <button className={"button3 btn btn-primary"} type="button" 
                                             onClick={() => {
-                                                self.browseCatalogue();
-
+                                                APIUtils.browse({api_key: self.props.api_key, api_auth:self.props.api_auth},
+                                                    self.state.catalogue_url, self.proc_browse_data);
+           
                                             }
                                             } ><span className={"buttonText"}>Browse</span></button>
                                         </div>
@@ -510,6 +351,7 @@ populateUrls = (urls) => {
                                     </pre>
                                     </td>
                                 </tr>
+                                {/*
                                 <tr><td  style={{textAlign:"right"}}><label className={"title3"} style={{ fontSize: "12px" }} >ETH Donation:
                                     </label>
                                     </td>
@@ -545,6 +387,7 @@ populateUrls = (urls) => {
                                     (Data update will reflect in catalogue after 1-2 minutes)
                                     </td>
                                 </tr>
+                                        */}
                             </tbody>
                         </table>
                         </center>
